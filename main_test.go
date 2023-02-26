@@ -3,7 +3,7 @@ package quizbot
 import "testing"
 
 func TestSample(t *testing.T) {
-	if 2+2 != 4 {
-		t.Error("2 + 2 != 4")
+	if someFunc(2) != 5 {
+		t.Error("2 + 3 != 5")
 	}
 }
