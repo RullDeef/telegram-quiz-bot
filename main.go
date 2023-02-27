@@ -1,4 +1,4 @@
-package quizbot
+package main
 
 import "fmt"
 
