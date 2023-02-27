@@ -1,0 +1,31 @@
+name: Build & Deploy app
+
+on:
+  pull_request_target:
+    types:
+    - closed
+
+jobs:
+  deploy:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.20.1
+    
+    - name: Build Go App
+      run: go build -v -x . # outputs file: telegram-quiz-bot
+
+    - name: Copy Go App to server
+      uses: burnett01/rsync-deployments@5.2.1
+      with:
+        switches: -avzr --delete
+        path: telegram-quiz-bot
+        remote_path: /var/opt/
+        remote_host: ${{ secrets.DEPLOY_HOST }}
+        remote_user: ${{ secrets.DEPLOY_USER }}
+        remote_key: ${{ secrets.DEPLOY_KEY }}
