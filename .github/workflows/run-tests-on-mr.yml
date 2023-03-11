@@ -8,22 +8,42 @@ on:
     branches: [ "feature/**" ]
 
 jobs:
-  build_and_test:
+  lint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.20.1
-    
     - name: Lint
-      uses: golangci/golangci-lint-action@v3
+      uses: adrielcodeco/docker-compose-run-action@v1
       with:
-        version: latest
-        # keep checking tests
-        args: --issues-exit-code=0
+        compose-file: './docker-compose.ci.yml'
+        service: linter
 
-    - name: Test
-      run: go test -v ./...
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Run Tests
+      uses: adrielcodeco/docker-compose-run-action@v1
+      with:
+        compose-file: './docker-compose.ci.yml'
+        service: tester
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build
+      uses: adrielcodeco/docker-compose-run-action@v1
+      with:
+        compose-file: './docker-compose.ci.yml'
+        service: tester
+        command: 'go build -v -o telegram-quiz-bot .'
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: telegram-quiz-bot
+        path: telegram-quiz-bot
