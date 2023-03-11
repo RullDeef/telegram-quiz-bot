@@ -1,7 +1,4 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: Build & test
+name: Test
 
 on:
   push:
@@ -46,4 +43,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: telegram-quiz-bot
-        path: telegram-quiz-bot
+        path: bot/app/telegram-quiz-bot

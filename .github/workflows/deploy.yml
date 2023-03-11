@@ -23,7 +23,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: telegram-quiz-bot
-        path: telegram-quiz-bot
+        path: bot/app/telegram-quiz-bot
 
   deploy:
     if: github.event.pull_request.merged == true
