@@ -1,0 +1,17 @@
+version: '3.3'
+
+services:
+  linter:
+    image: golangci/golangci-lint:v1.51.2-alpine
+    volumes:
+      - ./bot/mod_cache:/go/pkg/mod
+      - ./bot/app:/usr/src/app
+    working_dir: /usr/src/app
+    command: 'golangci-lint run'
+  tester:
+    image: golang:1.20.2-alpine
+    volumes:
+      - ./bot/mod_cache:/go/pkg/mod
+      - ./bot/app:/usr/src/app
+    working_dir: /usr/src/app
+    command: 'go test -v ./...'

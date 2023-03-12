@@ -1,0 +1,46 @@
+name: Test
+
+on:
+  push:
+    branches: [ "feature/**" ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Lint
+      uses: adrielcodeco/docker-compose-run-action@v1
+      with:
+        compose-file: './docker-compose.ci.yml'
+        service: linter
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Run Tests
+      uses: adrielcodeco/docker-compose-run-action@v1
+      with:
+        compose-file: './docker-compose.ci.yml'
+        service: tester
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build
+      uses: adrielcodeco/docker-compose-run-action@v1
+      with:
+        compose-file: './docker-compose.ci.yml'
+        service: tester
+        command: 'go build -v -o telegram-quiz-bot .'
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: telegram-quiz-bot
+        path: bot/app/telegram-quiz-bot
