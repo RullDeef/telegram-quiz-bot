@@ -37,7 +37,7 @@ jobs:
       with:
         compose-file: './docker-compose.ci.yml'
         service: tester
-        command: 'go build -v -o telegram-quiz-bot .'
+        command: 'go build -v -o telegram-quiz-bot ./cmd/quizbot'
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
