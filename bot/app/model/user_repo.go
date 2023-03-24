@@ -1,9 +1,9 @@
 package model
 
 type UserRepository interface {
-	Create(User)
-	FindByID(id uint64)
-	FindByTelegramID(id string)
+	Create(User) bool
+	FindByID(id uint64) User
+	FindByTelegramID(id string) User
 	Update(User)
 	Delete(User)
 }
