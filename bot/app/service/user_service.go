@@ -41,5 +41,5 @@ func (s *UserService) GetUserByTelegramId(id string) (model.User, error) {
 	if temp != (model.User{}) {
 		return temp, nil;
 	}
-	return nil, errors.New("No user found");
+	return temp, errors.New("No user found");
 }
