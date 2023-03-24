@@ -1,6 +1,9 @@
 package service
 
-import model "github.com/RullDeef/telegram-quiz-bot/model"
+import (
+	model "github.com/RullDeef/telegram-quiz-bot/model"
+	"errors"
+)
 
 type UserService struct {
 	UserRepo model.UserRepository
@@ -33,10 +36,10 @@ func (s *UserService) SetUserRole(role string, userId string) bool {
 	return true;
 }
 
-func (s *UserService) GetUserByTelegramId(id string) model.User {
+func (s *UserService) GetUserByTelegramId(id string) (model.User, error) {
 	temp := s.UserRepo.FindByTelegramID(id);
 	if (temp != nil) {
-		return temp;
+		return temp, nil;
 	}
-	return nil;
+	return nil, errors.New("No user found");
 }
