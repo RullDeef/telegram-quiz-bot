@@ -7,30 +7,30 @@ type UserService struct {
 }
 
 func (s *UserService) CreateUser(username string, telegramId string) bool {
-	temp := UserRepo.findByTelegramId(u.TelegramId)
+	temp := s.UserRepo.findByTelegramId(telegramId)
 	if (temp != nil) {
 		return false;
 	}
-	var user User;
+	var user model.User;
 	user.Nickname := username;
 	user.TelegramId := telegramId;
 	user.Role := "user";
-	UserRepo.Create(user);
+	s.UserRepo.Create(user);
 	return true;
 }
 
 func (s *UserService) SetUserRole(role string, userId string) bool {
-	temp := UserRepo.findByTelegramId(userId);
+	temp := s.UserRepo.findByTelegramId(userId);
 	if (temp != nil) {
 		return false;
 	}
 	temp.Role := role;
-	UserRepo.Update(temp);
+	s.UserRepo.Update(temp);
 	return true;
 }
 
-func (s *UserService) GetUserByTelegramId(id string) User {
-	temp := UserRepo.findByTelegramId(id);
+func (s *UserService) GetUserByTelegramId(id string) model.User {
+	temp := s.UserRepo.findByTelegramId(id);
 	if (temp != nil) {
 		return temp;
 	}
