@@ -3,7 +3,7 @@ package service
 import model "github.com/RullDeef/telegram-quiz-bot/model"
 
 type UserService struct {
-	UserRepo *model.UserRepository
+	UserRepo model.UserRepository
 }
 
 func (s *UserService) CreateUser(username string, telegramId string) bool {
@@ -12,9 +12,9 @@ func (s *UserService) CreateUser(username string, telegramId string) bool {
 		return false;
 	}
 	var user model.User;
-	user.Nickname := username;
-	user.TelegramId := telegramId;
-	user.Role := "user";
+	user.Nickname = username;
+	user.TelegramID = telegramId;
+	user.Role = "user";
 	s.UserRepo.Create(user);
 	return true;
 }
@@ -24,7 +24,7 @@ func (s *UserService) SetUserRole(role string, userId string) bool {
 	if (temp != nil) {
 		return false;
 	}
-	temp.Role := role;
+	temp.Role = role;
 	s.UserRepo.Update(temp);
 	return true;
 }
