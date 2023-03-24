@@ -6,8 +6,12 @@ type UserService struct {
 	UserRepo model.UserRepository
 }
 
+func NewUserService(UserRepository model.UserRepository) UserService {
+	return UserService{UserRepository};
+}
+
 func (s *UserService) CreateUser(username string, telegramId string) bool {
-	temp := s.UserRepo.findByTelegramId(telegramId)
+	temp := UserRepo.findByTelegramId(telegramId)
 	if (temp != nil) {
 		return false;
 	}
@@ -20,7 +24,7 @@ func (s *UserService) CreateUser(username string, telegramId string) bool {
 }
 
 func (s *UserService) SetUserRole(role string, userId string) bool {
-	temp := s.UserRepo.findByTelegramId(userId);
+	temp := UserRepo.findByTelegramId(userId);
 	if (temp != nil) {
 		return false;
 	}
@@ -30,7 +34,7 @@ func (s *UserService) SetUserRole(role string, userId string) bool {
 }
 
 func (s *UserService) GetUserByTelegramId(id string) model.User {
-	temp := s.UserRepo.findByTelegramId(id);
+	temp := UserRepo.findByTelegramId(id);
 	if (temp != nil) {
 		return temp;
 	}
