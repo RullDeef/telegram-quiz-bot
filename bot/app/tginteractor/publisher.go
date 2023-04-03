@@ -49,7 +49,7 @@ func (bp *TGBotPublisher) Run(mngr *manager.BotManager) {
 func tgCallbackToModel(query *tgbotapi.CallbackQuery) model.Message {
 	buttonActionID, err := strconv.ParseInt(query.Data, 10, 64)
 	if err != nil {
-		// TODO: error, but must never happen
+		log.Printf("ERROR: %v", err)
 	}
 	return model.Message{
 		ChatID:         query.Message.Chat.ID,

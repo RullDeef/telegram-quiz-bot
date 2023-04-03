@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"log"
 
 	model "github.com/RullDeef/telegram-quiz-bot/model"
 )
@@ -33,7 +34,10 @@ func (s *UserService) SetUserRole(role string, userId string) bool {
 		return false
 	}
 	temp.Role = role
-	s.UserRepo.Update(temp)
+	err := s.UserRepo.Update(temp)
+	if err != nil {
+		log.Printf("ERROR: %v", err)
+	}
 	return true
 }
 

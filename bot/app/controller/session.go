@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"time"
 
 	model "github.com/RullDeef/telegram-quiz-bot/model"
@@ -36,6 +37,7 @@ func (c *SessionController) Run() {
 	var users []*model.User
 	timer := time.NewTimer(30 * time.Second)
 
+outer:
 	for {
 		select {
 		case msg := <-c.interactor.MessageChan():
@@ -44,7 +46,8 @@ func (c *SessionController) Run() {
 			}
 		case <-timer.C:
 			c.interactor.SendResponse(model.NewResponse("Время вышло! Начинаем квиз!"))
-			break
+			c.interactor.SendResponse(model.NewResponse(fmt.Sprintf("users: %v", users)))
+			break outer
 		}
 	}
 	time.Sleep(30 * time.Second)
