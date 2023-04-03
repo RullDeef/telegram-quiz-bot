@@ -1,7 +1,7 @@
 package model
 
 type Quiz struct {
-	ID        uint64
+	ID        int64
 	Topic     string
 	Questions []Question
 }

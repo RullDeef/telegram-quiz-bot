@@ -2,12 +2,12 @@ package model
 
 type SessionState struct {
 	Quiz            Quiz
-	Users           []User
+	Users           []*User
 	CurrentQuestion *Question
 	IsPaused        bool
 }
 
-func NewSessionState(q Quiz, users []User) *SessionState {
+func NewSessionState(q Quiz, users []*User) *SessionState {
 	return &SessionState{
 		Quiz:            q,
 		Users:           users,
