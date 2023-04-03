@@ -15,3 +15,10 @@ services:
       - ./bot/app:/usr/src/app
     working_dir: /usr/src/app
     command: 'go test -v ./...'
+  builder:
+    image: golang:1.20.2-alpine
+    volumes:
+      - ./bot/mod_cache:/go/pkg/mod
+      - ./bot/app:/usr/src/app
+    working_dir: /usr/src/app
+    command: 'go build -v -o telegram-quiz-bot ./cmd/quizbot'

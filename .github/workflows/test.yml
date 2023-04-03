@@ -36,8 +36,7 @@ jobs:
       uses: adrielcodeco/docker-compose-run-action@v1
       with:
         compose-file: './docker-compose.ci.yml'
-        service: tester
-        command: 'go build -v -o telegram-quiz-bot ./cmd/quizbot'
+        service: builder
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
