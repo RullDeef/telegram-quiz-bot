@@ -1,8 +1,5 @@
 name: Check SQL
-
-on:
-  push:
-    branches: [ "feature/**" ]
+on: pull_request
 
 jobs:
   sqlcheck:
@@ -16,5 +13,3 @@ jobs:
         risk-level: 3
         verbose: true
         token: ${{ secrets.SQL_GITHUB_TOKEN }}
-        postfixes: sql
-        directories: ./db/init
