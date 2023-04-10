@@ -1,0 +1,20 @@
+name: Check SQL
+
+on:
+  push:
+    branches: [ "feature/**" ]
+
+jobs:
+  sqlcheck:
+    name: sqlcheck job
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: yokawasa/action-sqlcheck@v1.4.0
+      with:
+        post-comment: true
+        risk-level: 3
+        verbose: true
+        token: ${{ secrets.SQL_GITHUB_TOKEN }}
+        postfixes: sql
+        directories: ./db/init
