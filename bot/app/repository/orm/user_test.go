@@ -16,11 +16,11 @@ func TestUserInterface(t *testing.T) {
 		t.Errorf("Get connection to db = %s; want nil", err)
 	}
 
+	//need one user for quiz tests
 	user_add := model.User{ID: 1, Nickname: "Jacob", TelegramID: "some_id1", Role: "USER"}
 	user_update := model.User{ID: 1, Nickname: "James", TelegramID: "some_id1", Role: "USER"}
 
 	t.Run("Create", func(t *testing.T) {
-
 		err = user_repo.Create(user_add)
 
 		if err != nil {
@@ -49,6 +49,7 @@ func TestUserInterface(t *testing.T) {
 	})
 
 	t.Run("Update", func(t *testing.T) {
+		//bug: is_correct not update
 		err = user_repo.Update(user_update)
 
 		if err != nil {
