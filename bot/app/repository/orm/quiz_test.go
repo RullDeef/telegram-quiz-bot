@@ -1,86 +1,113 @@
 package orm
 
 import (
-	"fmt"
 	"testing"
-	"time"
 
 	"github.com/RullDeef/telegram-quiz-bot/model"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
+// test interface realization
+func TestQuizRepoInterface(t *testing.T) {
+	var _ model.QuizRepository = &ORMQuizRepository{}
+}
+
 func TestQuizInterface(t *testing.T) {
-	var quiz_repo QuizRepositoryStruct
-	var err error
-
-	quiz_repo.Db, err = create_connection("testdb", "postgres", "root", "quizdb", "5432")
-
+	dsn := "host=testdb user=postgres password=root port=5432 dbname=quizdb"
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{SkipDefaultTransaction: true})
 	if err != nil {
 		t.Errorf("Get connection to db = %s; want nil", err)
+		t.FailNow()
 	}
 
-	t.Run("Create", func(t *testing.T) {
-		quiz := model.QuizNew{ID: 1, Topic: "lala", Creator_id: -1, Created_at: time.Now()}
-		err = quiz_repo.Create(quiz)
+	user_repo := NewUserRepo(db)
+	quiz_repo := NewQuizRepo(db)
 
+	var quizID int64
+
+	creator := model.User{
+		Nickname:   "mega user",
+		TelegramID: "mega_user",
+		Role:       "USER",
+	}
+
+	t.Run("create creator", func(t *testing.T) {
+		creator, err = user_repo.Create(creator)
 		if err != nil {
-			t.Errorf("Create Quiz err = %s; want nil", err)
+			t.Errorf("failed to insert creator user")
+			t.FailNow()
+		}
+	})
+
+	t.Run("Create", func(t *testing.T) {
+		quiz := model.Quiz{
+			Topic:     "lala",
+			Creator:   creator,
+			Questions: nil,
+		}
+		quiz, err = quiz_repo.Create(quiz)
+		if err != nil {
+			t.Error(err)
+		} else {
+			t.Logf("quiz created: %v", quiz)
+			quizID = quiz.ID
 		}
 	})
 
 	t.Run("FindAll", func(t *testing.T) {
-		var all_quizes []model.QuizNew
-		all_quizes, err = quiz_repo.FindAll()
-
-		n_quizzes := len(all_quizes)
-		if n_quizzes == 0 {
+		all_quizes, err := quiz_repo.FindAll()
+		if err != nil {
+			t.Error(err)
+		}
+		if len(all_quizes) == 0 {
 			t.Errorf("FindAll no one quiz; want > 0")
 		}
 	})
 
 	t.Run("FindByTopicIsFound", func(t *testing.T) {
 		_, err = quiz_repo.FindByTopic("lala")
-
 		if err != nil {
-			t.Errorf("FindByTopicIsFound quiz count = %d; want > 0", 0)
+			t.Error(err)
 		}
 	})
 
 	t.Run("FindByTopicNotFound", func(t *testing.T) {
 		_, err = quiz_repo.FindByTopic("lolo")
-
 		if err == nil {
 			t.Errorf("FindByTopicNotFound found lolo topic; want 0")
 		}
 	})
 
 	t.Run("FindByIDFound", func(t *testing.T) {
-		var quiz_id int64 = 1
-
-		_, err = quiz_repo.FindByID(quiz_id)
-
+		_, err = quiz_repo.FindByID(quizID)
 		if err != nil {
-			t.Errorf("FindByIDFound found 0 quizes; want > 0")
+			t.Error(err)
 		}
 	})
 
 	t.Run("Update", func(t *testing.T) {
-		quiz := model.QuizNew{ID: 1, Topic: "lele", Creator_id: -1, Created_at: time.Now()}
-
+		quiz := model.Quiz{
+			ID:        quizID,
+			Topic:     "lele",
+			Creator:   creator,
+			Questions: nil,
+		}
 		err = quiz_repo.Update(quiz)
-		fmt.Print(err)
-
 		if err != nil {
-			t.Errorf("Update no one row updated; want 1")
+			t.Error(err)
 		}
 	})
 
 	t.Run("Delete", func(t *testing.T) {
-		var quiz_id int64 = 1
-
-		err = quiz_repo.Delete(quiz_id)
-
+		err = quiz_repo.Delete(model.Quiz{
+			ID:        quizID,
+			Topic:     "lele",
+			Creator:   creator,
+			Questions: nil,
+		})
 		if err != nil {
-			t.Errorf("Delete no one row updated; want 1")
+			t.Error(err)
 		}
 	})
 }

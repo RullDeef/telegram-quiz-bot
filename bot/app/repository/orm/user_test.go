@@ -4,37 +4,45 @@ import (
 	"testing"
 
 	"github.com/RullDeef/telegram-quiz-bot/model"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
+// test interface realization
+func TestUserRepoInterface(t *testing.T) {
+	var _ model.UserRepository = &ORMUserRepository{}
+}
+
 func TestUserInterface(t *testing.T) {
-	var user_repo UserRepositoryNewStruct
-	var err error
-
-	user_repo.Db, err = create_connection("testdb", "postgres", "root", "quizdb", "5432")
-
+	dsn := "host=testdb user=postgres password=root port=5432 dbname=quizdb"
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{SkipDefaultTransaction: true})
 	if err != nil {
 		t.Errorf("Get connection to db = %s; want nil", err)
 	}
 
+	user_repo := NewUserRepo(db)
+
 	//need one user for quiz tests
-	user_add := model.User{ID: 1, Nickname: "Jacob", TelegramID: "some_id1", Role: "USER"}
-	user_update := model.User{ID: 1, Nickname: "James", TelegramID: "some_id1", Role: "USER"}
+	user_add := model.User{Nickname: "Jacob", TelegramID: "some_id1", Role: "USER"}
+	var userID int64
+	user_update := model.User{Nickname: "James", TelegramID: "some_id1", Role: "USER"}
 
 	t.Run("Create", func(t *testing.T) {
-		err = user_repo.Create(user_add)
-
+		user_add, err := user_repo.Create(user_add)
 		if err != nil {
-			t.Errorf("Create User err = %s; want nil", err)
+			t.Error(err)
+		} else {
+			userID = user_add.ID
+			t.Logf("user %v created", user_add)
 		}
 	})
 
 	t.Run("FindByID", func(t *testing.T) {
-		var user_id int64 = 1
-
-		_, err := user_repo.FindByID(user_id)
+		_, err := user_repo.FindByID(userID)
 
 		if err != nil {
 			t.Errorf("FindByID no one user; want 1")
+			t.Error(err)
 		}
 	})
 
@@ -44,25 +52,26 @@ func TestUserInterface(t *testing.T) {
 
 		if err != nil {
 			t.Errorf("FindByTelegramID no one user; want 1")
+			t.Error(err)
 		}
 	})
 
 	t.Run("Update", func(t *testing.T) {
-		//bug: is_correct not update
+		user_update.ID = userID
 		err = user_repo.Update(user_update)
 
 		if err != nil {
 			t.Errorf("Update no one user; want 1")
+			t.Error(err)
 		}
 	})
 
 	t.Run("Delete", func(t *testing.T) {
-		var user_id int64 = 1
-
-		err = user_repo.Delete(user_id)
+		err = user_repo.Delete(user_add)
 
 		if err != nil {
 			t.Errorf("Delete no one user; want 1")
+			t.Error(err)
 		}
 	})
 }

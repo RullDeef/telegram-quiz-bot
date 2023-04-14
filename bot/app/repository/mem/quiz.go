@@ -1,7 +1,7 @@
 package mem_repo
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/RullDeef/telegram-quiz-bot/model"
 )
@@ -18,14 +18,14 @@ func NewQuizRepository() *QuizRepository {
 	}
 }
 
-func (qr *QuizRepository) Create(q model.Quiz) model.Quiz {
+func (qr *QuizRepository) Create(q model.Quiz) (model.Quiz, error) {
 	q.ID = qr.lastId
 	qr.quizzes = append(qr.quizzes, q)
-	return q
+	return q, nil
 }
 
-func (qr *QuizRepository) FindAll() []model.Quiz {
-	return qr.quizzes
+func (qr *QuizRepository) FindAll() ([]model.Quiz, error) {
+	return qr.quizzes, nil
 }
 
 func (qr *QuizRepository) FindByID(id int64) (model.Quiz, error) {
@@ -34,7 +34,7 @@ func (qr *QuizRepository) FindByID(id int64) (model.Quiz, error) {
 			return q, nil
 		}
 	}
-	return model.Quiz{}, errors.New("not found")
+	return model.Quiz{}, fmt.Errorf(`quiz with id="%d" not found`, id)
 }
 
 func (qr *QuizRepository) FindByTopic(topic string) (model.Quiz, error) {
@@ -43,7 +43,7 @@ func (qr *QuizRepository) FindByTopic(topic string) (model.Quiz, error) {
 			return q, nil
 		}
 	}
-	return model.Quiz{}, errors.New("not found")
+	return model.Quiz{}, fmt.Errorf(`quiz with topic="%s" not found`, topic)
 }
 
 func (qr *QuizRepository) Update(quiz model.Quiz) error {
@@ -53,14 +53,15 @@ func (qr *QuizRepository) Update(quiz model.Quiz) error {
 			return nil
 		}
 	}
-	return errors.New("not found")
+	return fmt.Errorf(`quiz with id="%d" not found`, quiz.ID)
 }
 
-func (qr *QuizRepository) Delete(quiz model.Quiz) {
+func (qr *QuizRepository) Delete(quiz model.Quiz) error {
 	for i, q := range qr.quizzes {
 		if q.ID == quiz.ID {
 			qr.quizzes = append(qr.quizzes[:i], qr.quizzes[i+1:]...)
-			break
+			return nil
 		}
 	}
+	return fmt.Errorf(`quiz with id="%d" not found`, quiz.ID)
 }

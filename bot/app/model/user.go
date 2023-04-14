@@ -7,6 +7,6 @@ type User struct {
 	Role       string
 }
 
-func NewUser(ID int64, Nickname, TelegramID, Role string) *User {
-	return &User{ID, Nickname, TelegramID, Role}
+func NewUser(ID int64, Nickname, TelegramID, Role string) User {
+	return User{ID, Nickname, TelegramID, Role}
 }

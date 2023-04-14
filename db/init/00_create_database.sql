@@ -19,6 +19,7 @@ create table quizzes (
 
 create table questions (
     id serial,
+    quiz_id integer,
     "text" text
 );
 
