@@ -15,7 +15,9 @@ alter table quizzes
 
 alter table questions
     add constraint c_questions_pk
-        primary key (id);
+        primary key (id),
+    add constraint c_questions_fk_quiz
+        foreign key (quiz_id) references quizzes(id);
 
 alter table answers
     add constraint c_answers_pk

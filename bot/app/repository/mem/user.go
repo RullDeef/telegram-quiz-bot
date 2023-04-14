@@ -2,6 +2,7 @@ package mem_repo
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/RullDeef/telegram-quiz-bot/model"
 )
@@ -18,10 +19,10 @@ func NewUserRepository() *UserRepository {
 	}
 }
 
-func (ur *UserRepository) Create(user model.User) model.User {
+func (ur *UserRepository) Create(user model.User) (model.User, error) {
 	user.ID = int64(len(ur.users))
 	ur.users = append(ur.users, user)
-	return user
+	return user, nil
 }
 
 func (ur *UserRepository) FindByID(id int64) (model.User, error) {
@@ -52,11 +53,12 @@ func (ur *UserRepository) Update(user model.User) error {
 	return errors.New("not found")
 }
 
-func (ur *UserRepository) Delete(user model.User) {
+func (ur *UserRepository) Delete(user model.User) error {
 	for i, u := range ur.users {
 		if u.ID == user.ID {
 			ur.users = append(ur.users[:i], ur.users[i+1:]...)
-			break
+			return nil
 		}
 	}
+	return fmt.Errorf(`user with id="%d" not found`, user.ID)
 }

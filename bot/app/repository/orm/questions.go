@@ -1,54 +1,47 @@
 package orm
 
-import (
-	"errors"
+// type QuestionsRepositoryStruct struct {
+// 	Db     *gorm.DB
+// 	LastId int
+// }
 
-	"github.com/RullDeef/telegram-quiz-bot/model"
-	"gorm.io/gorm"
-)
+// func (qr *QuestionsRepositoryStruct) Create(question model.Question) error {
+// 	return qr.Db.Table("questions").Create(&question).Error
+// }
 
-type QuestionsRepositoryStruct struct {
-	Db     *gorm.DB
-	LastId int
-}
+// func (qr *QuestionsRepositoryStruct) FindById(id int64) (model.Question, error) {
+// 	var question model.Question
+// 	result := qr.Db.Table("questions").Find(&question, id)
 
-func (qr *QuestionsRepositoryStruct) Create(question model.Question) error {
-	return qr.Db.Table("questions").Create(&question).Error
-}
+// 	err := result.Error
 
-func (qr *QuestionsRepositoryStruct) FindById(id int64) (model.Question, error) {
-	var question model.Question
-	result := qr.Db.Table("questions").Find(&question, id)
+// 	if result.RowsAffected == 0 {
+// 		err = errors.New("null")
+// 	}
 
-	err := result.Error
+// 	return question, err
+// }
 
-	if result.RowsAffected == 0 {
-		err = errors.New("null")
-	}
+// func (qr *QuestionsRepositoryStruct) Update(question model.Question) error {
+// 	result := qr.Db.Table("questions").Where("id = ?", question.ID).Updates(&question)
 
-	return question, err
-}
+// 	err := result.Error
 
-func (qr *QuestionsRepositoryStruct) Update(question model.Question) error {
-	result := qr.Db.Table("questions").Where("id = ?", question.ID).Updates(&question)
+// 	if result.RowsAffected == 0 {
+// 		err = errors.New("null")
+// 	}
 
-	err := result.Error
+// 	return err
+// }
 
-	if result.RowsAffected == 0 {
-		err = errors.New("null")
-	}
+// func (qr *QuestionsRepositoryStruct) Delete(id int64) error {
+// 	result := qr.Db.Table("questions").Delete(&model.Question{}, id)
 
-	return err
-}
+// 	err := result.Error
 
-func (qr *QuestionsRepositoryStruct) Delete(id int64) error {
-	result := qr.Db.Table("questions").Delete(&model.Question{}, id)
+// 	if result.RowsAffected == 0 {
+// 		err = errors.New("null")
+// 	}
 
-	err := result.Error
-
-	if result.RowsAffected == 0 {
-		err = errors.New("null")
-	}
-
-	return err
-}
+// 	return err
+// }

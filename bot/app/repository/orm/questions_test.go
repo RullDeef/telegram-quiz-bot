@@ -1,57 +1,51 @@
 package orm
 
-import (
-	"testing"
+// func TestQuestionInterface(t *testing.T) {
+// 	var err error
+// 	question_repo := &QuestionsRepositoryStruct{}
+// 	dsn := "host=testdb user=postgres password=root port=5432 dbname=quizdb"
+// 	question_repo.Db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{SkipDefaultTransaction: true})
+// 	if err != nil {
+// 		t.Errorf("Get connection to db = %s; want nil", err)
+// 		t.FailNow()
+// 	}
 
-	"github.com/RullDeef/telegram-quiz-bot/model"
-)
+// 	question_add := model.Question{ID: 1, Text: "Где диплом?"}
+// 	question_update := model.Question{ID: 1, Text: "Делается"}
 
-func TestQuestionInterface(t *testing.T) {
-	var question_repo QuestionsRepositoryStruct
-	var err error
+// 	t.Run("Create", func(t *testing.T) {
+// 		err = question_repo.Create(question_add)
 
-	question_repo.Db, err = create_connection("testdb", "postgres", "root", "quizdb", "5432")
+// 		if err != nil {
+// 			t.Errorf("Create question err = %s; want nil", err)
+// 		}
+// 	})
 
-	if err != nil {
-		t.Errorf("Get connection to db = %s; want nil", err)
-	}
+// 	t.Run("FindByID", func(t *testing.T) {
+// 		var question_id int64 = 1
 
-	question_add := model.Question{ID: 1, Text: "Где диплом?"}
-	question_update := model.Question{ID: 1, Text: "Делается"}
+// 		_, err := question_repo.FindById(question_id)
 
-	t.Run("Create", func(t *testing.T) {
-		err = question_repo.Create(question_add)
+// 		if err != nil {
+// 			t.Errorf("FindByID no one question; want 1")
+// 		}
+// 	})
 
-		if err != nil {
-			t.Errorf("Create question err = %s; want nil", err)
-		}
-	})
+// 	t.Run("Update", func(t *testing.T) {
+// 		err = question_repo.Update(question_update)
 
-	t.Run("FindByID", func(t *testing.T) {
-		var question_id int64 = 1
+// 		if err != nil {
+// 			t.Errorf("Update no one question; want 1")
+// 		}
+// 	})
 
-		_, err := question_repo.FindById(question_id)
+// 	t.Run("Delete", func(t *testing.T) {
+// 		var question_id int64 = 1
 
-		if err != nil {
-			t.Errorf("FindByID no one question; want 1")
-		}
-	})
+// 		err = question_repo.Delete(question_id)
 
-	t.Run("Update", func(t *testing.T) {
-		err = question_repo.Update(question_update)
-
-		if err != nil {
-			t.Errorf("Update no one question; want 1")
-		}
-	})
-
-	t.Run("Delete", func(t *testing.T) {
-		var question_id int64 = 1
-
-		err = question_repo.Delete(question_id)
-
-		if err != nil {
-			t.Errorf("Delete no one question; want 1")
-		}
-	})
-}
+// 		if err != nil {
+// 			t.Errorf("Delete no one question; want 1")
+// 		}
+// 	})
+// }

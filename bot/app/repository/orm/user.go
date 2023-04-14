@@ -1,78 +1,93 @@
 package orm
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/RullDeef/telegram-quiz-bot/model"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-//New version
-type UserRepositoryNewStruct struct {
-	Db     *gorm.DB
-	LastId int
+type userEntity struct {
+	ID         uint `gorm:"primaryKey"`
+	Nickname   string
+	TelegramId string `gorm:"column:telegram_id"`
+	Role       string
 }
 
-func create_connection(host, user, password, dbname, port string) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s", host, user, password, port, dbname)
-
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{SkipDefaultTransaction: true})
-
-	return db, err
+type ORMUserRepository struct {
+	db *gorm.DB
 }
 
-func (ur *UserRepositoryNewStruct) Create(user model.User) error {
-	return ur.Db.Create(&user).Error
-}
-
-func (ur *UserRepositoryNewStruct) FindByID(id int64) (model.User, error) {
-	var user model.User
-	result := ur.Db.Find(&user, id)
-
-	err := result.Error
-
-	if result.RowsAffected == 0 {
-		err = errors.New("null")
+func NewUserRepo(db *gorm.DB) *ORMUserRepository {
+	return &ORMUserRepository{
+		db: db,
 	}
-
-	return user, err
 }
 
-func (ur *UserRepositoryNewStruct) FindByTelegramID(id string) (model.User, error) {
-	var user model.User
-	result := ur.Db.Where("telegram_id = ?", id).Find(&user)
-
-	err := result.Error
-
-	if result.RowsAffected == 0 {
-		err = errors.New("null")
+func (ur *ORMUserRepository) Create(user model.User) (model.User, error) {
+	entity := userModelToEntity(user)
+	err := ur.db.Create(&entity).Error
+	if err != nil {
+		return model.User{}, err
 	}
-
-	return user, err
+	return userEntityToModel(entity), err
 }
 
-func (ur *UserRepositoryNewStruct) Update(user model.User) error {
-	result := ur.Db.Table("users").Where("id = ?", user.ID).Updates(&user)
-
-	err := result.Error
-
-	if result.RowsAffected == 0 {
-		err = errors.New("null")
+func (ur *ORMUserRepository) FindByID(id int64) (model.User, error) {
+	entity := userEntity{
+		ID: uint(id),
 	}
+	err := ur.db.First(&entity).Error
+	if err != nil {
+		return model.User{}, fmt.Errorf(`user with id="%d" not found: %w`, id, err)
+	}
+	return userEntityToModel(entity), err
+}
 
+func (ur *ORMUserRepository) FindByTelegramID(id string) (model.User, error) {
+	var entity userEntity
+	err := ur.db.First(&entity, "telegram_id = ?", id).Error
+	if err != nil {
+		return model.User{}, fmt.Errorf(`user with telegram_id="%s" not found: %w`, id, err)
+	}
+	return userEntityToModel(entity), err
+}
+
+func (ur *ORMUserRepository) Update(user model.User) error {
+	entity := userModelToEntity(user)
+	err := ur.db.Updates(&entity).Error
+	if err != nil {
+		err = fmt.Errorf(`failed to update user with id="%d": %w`, user.ID, err)
+	}
 	return err
 }
 
-func (ur *UserRepositoryNewStruct) Delete(id int64) error {
-	result := ur.Db.Table("users").Delete(&model.User{}, id)
-
-	err := result.Error
-
-	if result.RowsAffected == 0 {
-		err = errors.New("null")
+func (ur *ORMUserRepository) Delete(user model.User) error {
+	err := ur.db.Delete(&userEntity{}, user.ID).Error
+	if err != nil {
+		err = fmt.Errorf(`failed to delete user with id="%d": %w`, user.ID, err)
 	}
-
 	return err
+}
+
+func (userEntity) TableName() string {
+	return "users"
+}
+
+func userEntityToModel(user userEntity) model.User {
+	return model.User{
+		ID:         int64(user.ID),
+		Nickname:   user.Nickname,
+		TelegramID: user.TelegramId,
+		Role:       user.Role,
+	}
+}
+
+func userModelToEntity(user model.User) userEntity {
+	return userEntity{
+		ID:         uint(user.ID),
+		Nickname:   user.Nickname,
+		TelegramId: user.TelegramID,
+		Role:       user.Role,
+	}
 }

@@ -1,6 +1,6 @@
 package model
 
 type Question struct {
-	ID   uint64
+	ID   int64
 	Text string
 }

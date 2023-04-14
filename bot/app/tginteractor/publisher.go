@@ -76,10 +76,10 @@ func tgMessageToModel(message *tgbotapi.Message) model.Message {
 
 func tgUserToModel(user *tgbotapi.User) *model.User {
 	// TODO: load by telegram id from repository
-	return model.NewUser(
-		user.ID,
-		fmt.Sprintf("%s %s", user.FirstName, user.LastName),
-		user.UserName,
-		"USER",
-	)
+	return &model.User{
+		ID:         user.ID,
+		Nickname:   fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+		TelegramID: user.UserName,
+		Role:       "USER",
+	}
 }
