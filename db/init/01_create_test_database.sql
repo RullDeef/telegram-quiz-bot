@@ -37,3 +37,5 @@ create table statistics (
     correct_replies integer,
     correct_replies_percent integer
 );
+
+insert into users values (-1, "Jacob", "some_id1", "USER")
