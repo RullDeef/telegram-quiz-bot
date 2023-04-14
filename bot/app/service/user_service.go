@@ -15,17 +15,20 @@ func NewUserService(UserRepository model.UserRepository) UserService {
 	return UserService{UserRepository}
 }
 
-func (s *UserService) CreateUser(username string, telegramId string) bool {
-	temp, _ := s.UserRepo.FindByTelegramID(telegramId)
-	if temp != (model.User{}) {
-		return false
+func (s *UserService) CreateUser(username string, telegramId string) (model.User, error) {
+	temp, err := s.UserRepo.FindByTelegramID(telegramId)
+	if (err != nil) {
+		return model.User{}, errors.New("Duplicate user")
 	}
 	var user model.User
 	user.Nickname = username
 	user.TelegramID = telegramId
 	user.Role = "user"
-	s.UserRepo.Create(user)
-	return true
+	temp, err = s.UserRepo.Create(user)
+	if (err != nil) {
+		return model.User{}, errors.New("Database error")
+	}
+	return temp, nil
 }
 
 func (s *UserService) SetUserRole(role string, userId string) bool {
