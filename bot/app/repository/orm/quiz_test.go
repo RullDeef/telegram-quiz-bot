@@ -12,7 +12,7 @@ func TestQuizInterface(t *testing.T) {
 	var quiz_repo QuizRepositoryStruct
 	var err error
 
-	quiz_repo.Db, err = create_connection("localhost", "postgres", "root", "quizdb_test", "5432")
+	quiz_repo.Db, err = create_connection("db_bot", "postgres", "root", "quizdb_test", "5432")
 
 	if err != nil {
 		t.Errorf("Get connection to db = %s; want nil", err)
@@ -54,8 +54,7 @@ func TestQuizInterface(t *testing.T) {
 	})
 
 	t.Run("FindByIDFound", func(t *testing.T) {
-		var quiz_id int64
-		quiz_id = 1
+		var quiz_id int64 = 1
 
 		_, err = quiz_repo.FindByID(quiz_id)
 
@@ -76,8 +75,7 @@ func TestQuizInterface(t *testing.T) {
 	})
 
 	t.Run("Delete", func(t *testing.T) {
-		var quiz_id int64
-		quiz_id = 1
+		var quiz_id int64 = 1
 
 		err = quiz_repo.Delete(quiz_id)
 

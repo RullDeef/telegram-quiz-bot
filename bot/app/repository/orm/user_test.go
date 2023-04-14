@@ -10,7 +10,7 @@ func TestUserInterface(t *testing.T) {
 	var user_repo UserRepositoryNewStruct
 	var err error
 
-	user_repo.Db, err = create_connection("localhost", "postgres", "root", "quizdb_test", "5432")
+	user_repo.Db, err = create_connection("db_bot", "postgres", "root", "quizdb_test", "5432")
 
 	if err != nil {
 		t.Errorf("Get connection to db = %s; want nil", err)
@@ -29,8 +29,7 @@ func TestUserInterface(t *testing.T) {
 	})
 
 	t.Run("FindByID", func(t *testing.T) {
-		var user_id int64
-		user_id = 1
+		var user_id int64 = 1
 
 		_, err := user_repo.FindByID(user_id)
 
@@ -58,8 +57,7 @@ func TestUserInterface(t *testing.T) {
 	})
 
 	t.Run("Delete", func(t *testing.T) {
-		var user_id int64
-		user_id = 1
+		var user_id int64 = 1
 
 		err = user_repo.Delete(user_id)
 
