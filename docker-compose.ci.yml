@@ -1,24 +1,39 @@
 version: '3.3'
 
 services:
-  linter:
-    image: golangci/golangci-lint:v1.51.2-alpine
-    volumes:
-      - ./bot/mod_cache:/go/pkg/mod
-      - ./bot/app:/usr/src/app
-    working_dir: /usr/src/app
-    command: 'golangci-lint run'
-  tester:
-    image: golang:1.20.2-alpine
-    volumes:
-      - ./bot/mod_cache:/go/pkg/mod
-      - ./bot/app:/usr/src/app
-    working_dir: /usr/src/app
-    command: 'go test -v ./...'
-  builder:
+  builder: &go-base
     image: golang:1.20.2-alpine
     volumes:
       - ./bot/mod_cache:/go/pkg/mod
       - ./bot/app:/usr/src/app
     working_dir: /usr/src/app
     command: 'go build -v -o telegram-quiz-bot ./cmd/quizbot'
+  linter:
+    <<: *go-base
+    image: golangci/golangci-lint:v1.51.2-alpine
+    command: 'golangci-lint run'
+  unit-tester:
+    <<: *go-base
+    command: >
+      go test -v
+      ./model
+      ./controller
+      ./service
+      ./tginteractor
+      ./repository/mem
+  integration-tester:
+    <<: *go-base
+    command: >
+      go test -v
+      ./repository/orm
+    depends_on:
+      - db
+  db:
+    container_name: testdb
+    image: postgres:15.2-alpine
+    restart: always
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_PASSWORD: root

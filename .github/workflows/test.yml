@@ -16,16 +16,27 @@ jobs:
         compose-file: './docker-compose.ci.yml'
         service: linter
 
-  test:
+  unit-tests:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
 
-    - name: Run Tests
+    - name: Run unit tests
       uses: adrielcodeco/docker-compose-run-action@v1
       with:
         compose-file: './docker-compose.ci.yml'
-        service: tester
+        service: unit-tester
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Run integration tests
+      uses: adrielcodeco/docker-compose-run-action@v1
+      with:
+        compose-file: './docker-compose.ci.yml'
+        service: integration-tester
 
   build:
     runs-on: ubuntu-latest

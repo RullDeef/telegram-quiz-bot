@@ -12,7 +12,7 @@ func TestQuizInterface(t *testing.T) {
 	var quiz_repo QuizRepositoryStruct
 	var err error
 
-	quiz_repo.Db, err = create_connection("db_bot", "postgres", "root", "quizdb_test", "5432")
+	quiz_repo.Db, err = create_connection("testdb", "postgres", "root", "quizdb", "5432")
 
 	if err != nil {
 		t.Errorf("Get connection to db = %s; want nil", err)
