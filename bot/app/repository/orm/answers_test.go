@@ -1,7 +1,6 @@
 package orm
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/RullDeef/telegram-quiz-bot/model"
@@ -52,7 +51,6 @@ func TestAnswersInterface(t *testing.T) {
 
 	t.Run("Update", func(t *testing.T) {
 		err = answer_repo.Update(answer_upd)
-		fmt.Print(answer_upd.Is_correct)
 		if err != nil {
 			t.Errorf("Update no one answer; want 1")
 		}
