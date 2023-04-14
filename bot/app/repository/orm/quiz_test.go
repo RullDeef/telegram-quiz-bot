@@ -1,6 +1,7 @@
 package orm
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -18,7 +19,7 @@ func TestQuizInterface(t *testing.T) {
 	}
 
 	t.Run("Create", func(t *testing.T) {
-		quiz := model.QuizNew{ID: 1, Topic: "lala", Creator_id: 1, Created_at: time.Now()}
+		quiz := model.QuizNew{ID: 1, Topic: "lala", Creator_id: -1, Created_at: time.Now()}
 		err = quiz_repo.Create(quiz)
 
 		if err != nil {
@@ -64,9 +65,10 @@ func TestQuizInterface(t *testing.T) {
 	})
 
 	t.Run("Update", func(t *testing.T) {
-		quiz := model.QuizNew{ID: 1, Topic: "lele", Creator_id: 1, Created_at: time.Now()}
+		quiz := model.QuizNew{ID: 1, Topic: "lele", Creator_id: -1, Created_at: time.Now()}
 
 		err = quiz_repo.Update(quiz)
+		fmt.Print(err)
 
 		if err != nil {
 			t.Errorf("Update no one row updated; want 1")

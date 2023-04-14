@@ -2,6 +2,7 @@ package orm
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/RullDeef/telegram-quiz-bot/model"
 	"gorm.io/gorm"
@@ -51,6 +52,7 @@ func (qzr *QuizRepositoryStruct) FindByTopic(topic string) (model.QuizNew, error
 }
 
 func (qzr *QuizRepositoryStruct) Update(quiz model.QuizNew) error {
+	fmt.Print(quiz)
 	result := qzr.Db.Table("quizzes").Where("id = ?", quiz.ID).Updates(&quiz)
 	err := result.Error
 
