@@ -1,6 +1,8 @@
 package orm
 
 import (
+	"errors"
+
 	"github.com/RullDeef/telegram-quiz-bot/model"
 	"gorm.io/gorm"
 )
@@ -11,20 +13,42 @@ type QuestionsRepositoryStruct struct {
 }
 
 func (qr *QuestionsRepositoryStruct) Create(question model.Question) error {
-	return qr.Db.Table("questions").Create(question).Error
+	return qr.Db.Table("questions").Create(&question).Error
 }
 
 func (qr *QuestionsRepositoryStruct) FindById(id int64) (model.Question, error) {
 	var question model.Question
 	result := qr.Db.Table("questions").Find(&question, id)
 
-	return question, result.Error
+	err := result.Error
+
+	if result.RowsAffected == 0 {
+		err = errors.New("null")
+	}
+
+	return question, err
 }
 
 func (qr *QuestionsRepositoryStruct) Update(question model.Question) error {
-	return qr.Db.Table("questions").Where("id = ?", question.ID).Save(&question).Error
+	result := qr.Db.Table("questions").Where("id = ?", question.ID).Updates(&question)
+
+	err := result.Error
+
+	if result.RowsAffected == 0 {
+		err = errors.New("null")
+	}
+
+	return err
 }
 
 func (qr *QuestionsRepositoryStruct) Delete(id int64) error {
-	return qr.Db.Table("questions").Delete(&model.Question{}, id).Error
+	result := qr.Db.Table("questions").Delete(&model.Question{}, id)
+
+	err := result.Error
+
+	if result.RowsAffected == 0 {
+		err = errors.New("null")
+	}
+
+	return err
 }
