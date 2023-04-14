@@ -1,6 +1,7 @@
 package orm
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/RullDeef/telegram-quiz-bot/model"
@@ -30,20 +31,48 @@ func (ur *UserRepositoryNewStruct) FindByID(id int64) (model.User, error) {
 	var user model.User
 	result := ur.Db.Find(&user, id)
 
-	return user, result.Error
+	err := result.Error
+
+	if result.RowsAffected == 0 {
+		err = errors.New("null")
+	}
+
+	return user, err
 }
 
 func (ur *UserRepositoryNewStruct) FindByTelegramID(id string) (model.User, error) {
 	var user model.User
 	result := ur.Db.Where("telegram_id = ?", id).Find(&user)
 
-	return user, result.Error
+	err := result.Error
+
+	if result.RowsAffected == 0 {
+		err = errors.New("null")
+	}
+
+	return user, err
 }
 
 func (ur *UserRepositoryNewStruct) Update(user model.User) error {
-	return ur.Db.Table("users").Where("id = ?", user.ID).Save(&user).Error
+	result := ur.Db.Table("users").Where("id = ?", user.ID).Updates(&user)
+
+	err := result.Error
+
+	if result.RowsAffected == 0 {
+		err = errors.New("null")
+	}
+
+	return err
 }
 
-func (ur *UserRepositoryNewStruct) Delete(id int) error {
-	return ur.Db.Table("users").Delete(&model.User{}, id).Error
+func (ur *UserRepositoryNewStruct) Delete(id int64) error {
+	result := ur.Db.Table("users").Delete(&model.User{}, id)
+
+	err := result.Error
+
+	if result.RowsAffected == 0 {
+		err = errors.New("null")
+	}
+
+	return err
 }
