@@ -12,7 +12,6 @@ import (
 type UserRepositoryNewStruct struct {
 	Db     *gorm.DB
 	LastId int
-	Users  []model.User
 }
 
 func create_connection(host, user, password, dbname, port string) (*gorm.DB, error) {
