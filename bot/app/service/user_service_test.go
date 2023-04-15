@@ -92,7 +92,7 @@ func TestUserServiceGetUserByTelegramId(t *testing.T) {
 	wrongTelegramId := "telegramID#2"
 	role := "user"
 	existing_user := model.User{Nickname: nickname, TelegramID: telegramId, Role: role}
-	_, err = repo.Create(existing_user)
+	_, err := repo.Create(existing_user)
 	if (err != nil) {
 		t.Errorf("Create database error")
 	}
