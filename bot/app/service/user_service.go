@@ -31,23 +31,24 @@ func (s *UserService) CreateUser(username string, telegramId string) (model.User
 	return temp, nil
 }
 
-func (s *UserService) SetUserRole(role string, userId string) bool {
-	temp, _ := s.UserRepo.FindByTelegramID(userId)
-	if temp != (model.User{}) {
+func (s *UserService) SetUserRole(role string, telegramId string) bool {
+	temp, err := s.UserRepo.FindByTelegramID(telegramId)
+	if err != nil {
 		return false
 	}
 	temp.Role = role
-	err := s.UserRepo.Update(temp)
+	err = s.UserRepo.Update(temp)
 	if err != nil {
 		log.Printf("ERROR: %v", err)
+		return false
 	}
 	return true
 }
 
 func (s *UserService) GetUserByTelegramId(id string) (model.User, error) {
-	temp, _ := s.UserRepo.FindByTelegramID(id)
-	if temp != (model.User{}) {
-		return temp, nil
+	temp, err := s.UserRepo.FindByTelegramID(id)
+	if err != nil {
+		return model.User{}, errors.New("No user found")
 	}
-	return temp, errors.New("No user found")
+	return temp, nil
 }
