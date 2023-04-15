@@ -30,7 +30,7 @@ func TestUserServiceCreateUser(t *testing.T) {
 		}
 	})
 
-	err := repo.Delete(existing_user)
+	err = repo.Delete(existing_user)
 	if (err != nil) {
 		t.Errorf("Delete database error")
 	}
