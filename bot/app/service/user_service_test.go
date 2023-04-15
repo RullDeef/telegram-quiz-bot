@@ -18,7 +18,10 @@ func TestUserServiceCreateUser(t *testing.T) {
 	telegramId := "telegramID#0"
 	wrongRole := "superuser"
 	existing_user := model.User{Nickname: nickname, TelegramID: telegramId, Role: wrongRole}
-	repo.Create(existing_user)
+	_, err = repo.Create(existing_user)
+	if (err != nil) {
+		return t.Errorf("Create database error")
+	}
 
 	t.Run("Add duplicate user should return error", func(t *testing.T) {
 		_, err := service.CreateUser(nickname, telegramId)
@@ -27,7 +30,10 @@ func TestUserServiceCreateUser(t *testing.T) {
 		}
 	})
 
-	repo.Delete(existing_user)
+	err = repo.Delete(existing_user)
+	if (err != nil) {
+		return t.Errorf("Delete database error")
+	}
 	t.Run("Add new user should return true", func(t *testing.T) {
 		_, err := service.CreateUser(nickname, telegramId)
 		if (err != nil) {
@@ -55,7 +61,10 @@ func TestUserServiceSetUserRole(t *testing.T) {
 	role := "user"
 	updateRole := "admin"
 	existing_user := model.User{Nickname: nickname, TelegramID: telegramId, Role: role}
-	repo.Create(existing_user)
+	_, err = repo.Create(existing_user)
+	if (err != nil) {
+		return t.Errorf("Create database error")
+	}
 
 	t.Run("Update role should return true", func(t *testing.T) {
 		status := service.SetUserRole(updateRole, telegramId)
@@ -83,7 +92,10 @@ func TestUserServiceGetUserByTelegramId(t *testing.T) {
 	wrongTelegramId := "telegramID#2"
 	role := "user"
 	existing_user := model.User{Nickname: nickname, TelegramID: telegramId, Role: role}
-	repo.Create(existing_user)
+	_, err = repo.Create(existing_user)
+	if (err != nil) {
+		return t.Errorf("Create database error")
+	}
 
 	t.Run("Get user with correct telegram id should return user struct", func(t *testing.T) {
 		user, err := service.GetUserByTelegramId(telegramId)

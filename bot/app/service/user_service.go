@@ -16,7 +16,7 @@ func NewUserService(UserRepository model.UserRepository) UserService {
 }
 
 func (s *UserService) CreateUser(username string, telegramId string) (model.User, error) {
-	temp, err := s.UserRepo.FindByTelegramID(telegramId)
+	_, err := s.UserRepo.FindByTelegramID(telegramId)
 	if (err != nil) {
 		return model.User{}, errors.New("Duplicate user")
 	}
