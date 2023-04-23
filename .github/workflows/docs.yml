@@ -10,13 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Pull dev branch
-      uses: cross-the-world/ssh-pipeline@master
+      uses: appleboy/ssh-action@v0.1.10
       with:
         host: ${{ secrets.DEPLOY_HOST }}
-        user: ${{ secrets.DEPLOY_USER }}
-        pass: ${{ secrets.DEPLOY_PASS }}
+        username: ${{ secrets.DEPLOY_USER }}
+        password: ${{ secrets.DEPLOY_PASS }}
         port: ${{ secrets.DEPLOY_PORT }}
-        connect_timeout: 10s
         script: |
           cd ~/telegram-quiz-bot
           git checkout dev
