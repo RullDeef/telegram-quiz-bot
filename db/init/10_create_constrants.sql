@@ -6,13 +6,6 @@ alter table users
     add constraint c_users_role
         check (("role") in ('USER', 'ADMIN'));
 
-alter table quizzes
-    add constraint c_quizzes_pk
-        primary key (id),
-    add constraint c_quizzes_fk_creator
-        foreign key (creator_id) references users(id),
-    alter created_at set default now();
-
 alter table questions
     add constraint c_questions_pk
         primary key (id),

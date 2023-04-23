@@ -13,11 +13,10 @@ func main() {
 	publisher := tginteractor.NewTGBotPublisher(os.Getenv("TELEGRAM_API_TOKEN"))
 
 	userRepo := mem_repo.NewUserRepository()
-	quizRepo := mem_repo.NewQuizRepository()
 
 	botMngr := manager.NewBotManager(func(bm *manager.BotManager, i int64, c chan model.Message) model.Interactor {
 		return tginteractor.NewInteractor(publisher, i, c)
-	}, userRepo, quizRepo)
+	}, userRepo)
 
 	publisher.Run(botMngr)
 }

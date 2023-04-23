@@ -16,7 +16,6 @@ type InteractorFactory func(
 
 type BotManager struct {
 	userRepo          model.UserRepository
-	quizRepo          model.QuizRepository
 	interactorFactory InteractorFactory
 	subscriptions     []subscription
 	mutex             *sync.RWMutex
@@ -31,11 +30,9 @@ type subscription struct {
 func NewBotManager(
 	interactorFactory InteractorFactory,
 	userRepo model.UserRepository,
-	quizRepo model.QuizRepository,
 ) *BotManager {
 	return &BotManager{
 		userRepo:          userRepo,
-		quizRepo:          quizRepo,
 		interactorFactory: interactorFactory,
 		subscriptions:     nil,
 		mutex:             &sync.RWMutex{},
@@ -75,7 +72,6 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				// TODO: check sender role here
 				controller.NewAdminController(
-					bm.quizRepo,
 					bm.userRepo,
 					interactor,
 				).CreateQuiz()
@@ -84,7 +80,6 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				// TODO: check sender role here
 				controller.NewAdminController(
-					bm.quizRepo,
 					bm.userRepo,
 					interactor,
 				).ViewMyQuizzes()
@@ -93,7 +88,6 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				// TODO: check sender role here
 				controller.NewAdminController(
-					bm.quizRepo,
 					bm.userRepo,
 					interactor,
 				).EditQuiz()
@@ -105,7 +99,6 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				controller.NewSessionController(
 					bm.userRepo,
-					bm.quizRepo,
 					interactor,
 				).Run()
 			})
