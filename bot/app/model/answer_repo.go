@@ -1,5 +1,6 @@
 package model
 
+// Не используется
 type AnswerRepository interface {
 	Create(answer Answer) error
 	FindByAnswerId(id int64) (Answer, error)
