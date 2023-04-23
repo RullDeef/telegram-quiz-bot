@@ -9,6 +9,9 @@ type QuestionRepository interface {
 	// Производит поиск вопроса по идентификатору
 	FindById(id int64) (Question, error)
 
+	// Производит поиск вопросов по тематике
+	FindByTopic(topic string) ([]Question, error)
+
 	// Обновляет вопрос
 	Update(question Question) error
 

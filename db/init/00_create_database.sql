@@ -10,17 +10,10 @@ create table users (
     role text
 );
 
-create table quizzes (
-    id serial,
-    topic text,
-    creator_id integer,
-    created_at timestamp
-);
-
 create table questions (
     id serial,
-    quiz_id integer,
-    "text" text
+    "text" text,
+    topic text
 );
 
 create table answers (

@@ -1,47 +1,127 @@
 package orm
 
-// type QuestionsRepositoryStruct struct {
-// 	Db     *gorm.DB
-// 	LastId int
-// }
+import (
+	"fmt"
 
-// func (qr *QuestionsRepositoryStruct) Create(question model.Question) error {
-// 	return qr.Db.Table("questions").Create(&question).Error
-// }
+	"github.com/RullDeef/telegram-quiz-bot/model"
+	"gorm.io/gorm"
+)
 
-// func (qr *QuestionsRepositoryStruct) FindById(id int64) (model.Question, error) {
-// 	var question model.Question
-// 	result := qr.Db.Table("questions").Find(&question, id)
+type answerEntity struct {
+	ID         uint `gorm:"primaryKey"`
+	Text       string
+	IsCorrect  bool
+	QuestionID uint
+}
 
-// 	err := result.Error
+type questionEntity struct {
+	ID      uint `gorm:"primaryKey"`
+	Text    string
+	Topic   string
+	Answers []answerEntity `gorm:"foreignKey:QuestionID"`
+}
 
-// 	if result.RowsAffected == 0 {
-// 		err = errors.New("null")
-// 	}
+type QuestionsRepository struct {
+	db *gorm.DB
+}
 
-// 	return question, err
-// }
+func NewQuestionsRepository(
+	db *gorm.DB,
+) *QuestionsRepository {
+	return &QuestionsRepository{
+		db: db,
+	}
+}
 
-// func (qr *QuestionsRepositoryStruct) Update(question model.Question) error {
-// 	result := qr.Db.Table("questions").Where("id = ?", question.ID).Updates(&question)
+func (qr *QuestionsRepository) Create(question model.Question) (model.Question, error) {
+	entity := questionModelToEntity(question)
+	err := qr.db.Preload("Answers").Create(&entity).Error
+	if err != nil {
+		return model.Question{}, fmt.Errorf(`failed to create question "%s": %w`, question.Text, err)
+	}
+	return questionEntityToModel(entity), nil
+}
 
-// 	err := result.Error
+func (qr *QuestionsRepository) FindById(id int64) (model.Question, error) {
+	var entity questionEntity
+	err := qr.db.Preload("Answers").First(&entity, id).Error
+	if err != nil {
+		return model.Question{}, fmt.Errorf(`failed to find question with id=%d: %w`, id, err)
+	}
+	return questionEntityToModel(entity), err
+}
 
-// 	if result.RowsAffected == 0 {
-// 		err = errors.New("null")
-// 	}
+func (qr *QuestionsRepository) FindByTopic(topic string) ([]model.Question, error) {
+	var entities []questionEntity
+	err := qr.db.Preload("Answers").Find(&entities, "topic = ?", topic).Error
+	if err != nil {
+		return nil, fmt.Errorf(`failed to find question with topic="%s": %w`, topic, err)
+	}
+	var questions []model.Question
+	for _, entity := range entities {
+		questions = append(questions, questionEntityToModel(entity))
+	}
+	return questions, nil
+}
 
-// 	return err
-// }
+func (qr *QuestionsRepository) Update(q model.Question) error {
+	entity := questionModelToEntity(q)
+	err := qr.db.Preload("Answers").Updates(&entity).Error
+	if err != nil {
+		return fmt.Errorf(`failed to update question with id=%d: %w`, q.ID, err)
+	}
+	return nil
+}
 
-// func (qr *QuestionsRepositoryStruct) Delete(id int64) error {
-// 	result := qr.Db.Table("questions").Delete(&model.Question{}, id)
+func (qr *QuestionsRepository) Delete(id int64) error {
+	err := qr.db.Preload("Answers").Delete(&questionEntity{}, id).Error
+	if err != nil {
+		return fmt.Errorf(`failed to delete question with id=%d: %w`, id, err)
+	}
+	return nil
+}
 
-// 	err := result.Error
+func (questionEntity) TableName() string {
+	return "questions"
+}
 
-// 	if result.RowsAffected == 0 {
-// 		err = errors.New("null")
-// 	}
+func (answerEntity) TableName() string {
+	return "answers"
+}
 
-// 	return err
-// }
+func questionModelToEntity(q model.Question) questionEntity {
+	var answers []answerEntity
+	for _, ans := range q.Answers {
+		answers = append(answers, answerEntity{
+			ID:         uint(ans.ID),
+			Text:       ans.Text,
+			IsCorrect:  ans.IsСorrect,
+			QuestionID: uint(q.ID),
+		})
+	}
+
+	return questionEntity{
+		ID:      uint(q.ID),
+		Text:    q.Text,
+		Topic:   q.Topic,
+		Answers: answers,
+	}
+}
+
+func questionEntityToModel(entity questionEntity) model.Question {
+	var answers []model.Answer
+	for _, ans := range entity.Answers {
+		answers = append(answers, model.Answer{
+			ID:        uint64(ans.ID),
+			Text:      ans.Text,
+			IsСorrect: ans.IsCorrect,
+		})
+	}
+
+	return model.Question{
+		ID:      int64(entity.ID),
+		Text:    entity.Text,
+		Topic:   entity.Topic,
+		Answers: answers,
+	}
+}

@@ -9,19 +9,16 @@ import (
 
 type SessionController struct {
 	userRepo   model.UserRepository
-	quizRepo   model.QuizRepository
 	interactor model.Interactor
 	state      *model.SessionState // maybe not needed here as field
 }
 
 func NewSessionController(
 	userRepo model.UserRepository,
-	quizRepo model.QuizRepository,
 	interactor model.Interactor,
 ) *SessionController {
 	return &SessionController{
 		userRepo:   userRepo,
-		quizRepo:   quizRepo,
 		interactor: interactor,
 		state:      nil,
 	}

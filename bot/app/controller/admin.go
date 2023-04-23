@@ -3,18 +3,15 @@ package controller
 import model "github.com/RullDeef/telegram-quiz-bot/model"
 
 type AdminController struct {
-	quizRepo   model.QuizRepository
 	userRepo   model.UserRepository
 	interactor model.Interactor
 }
 
 func NewAdminController(
-	quizRepo model.QuizRepository,
 	userRepo model.UserRepository,
 	interactor model.Interactor,
 ) *AdminController {
 	return &AdminController{
-		quizRepo:   quizRepo,
 		userRepo:   userRepo,
 		interactor: interactor,
 	}
