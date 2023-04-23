@@ -37,3 +37,11 @@ services:
       - ./db/init:/docker-entrypoint-initdb.d
     environment:
       POSTGRES_PASSWORD: root
+  godoc:
+    container_name: godoc
+    build: ./godoc
+    volumes:
+      - ./bot/app:/usr/src/app
+    working_dir: /usr/src/app
+    ports:
+      - 6060:6060
