@@ -34,11 +34,9 @@ func (sr *ORMStatsRepository) Create(stat model.Statistics) error {
 	return nil
 }
 
-func (sr *ORMStatsRepository) FindByUserID(id uint64) (model.Statistics, error) {
-	entity := statEntity{
-		UserID: uint(id),
-	}
-	err := sr.db.Find(&entity, "UserID = ?", uint(id)).Error
+func (sr *ORMStatsRepository) FindByUserID(id int64) (model.Statistics, error) {
+	var entity statEntity
+	err := sr.db.First(&entity, "user_id = ?", uint(id)).Error
 	if err != nil {
 		return model.Statistics{}, fmt.Errorf(`statistics for user with id="%d" not found: %w`, id, err)
 	}
