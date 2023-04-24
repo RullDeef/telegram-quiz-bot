@@ -1,5 +1,9 @@
 package service
 
+// Данный модуль реализует use-case, связанные с пользователем:
+// - создание нового пользователя по telegram id;
+// - смена роли существующего пользователя;
+// - получение пользователя из базы данных по его telegram id.
 import (
 	"errors"
 	"log"
@@ -15,6 +19,14 @@ func NewUserService(UserRepository model.UserRepository) UserService {
 	return UserService{UserRepository}
 }
 
+// Функция создает нового пользователя в базе данных.
+//
+// Формальные параметры: имя пользователя для использования в приложении (по умолчанию используется никнейм из telegram), telegram id.
+//
+// При успешном выполнении возвращает пользователя с созданным id базы данных.
+//
+// 1. В случае существования пользователя с полученным telegramId функция возвращает пустую структуру пользователя и ошибку дубликата пользователя.
+// 2. В случае получения ошибки из репозитория при сохранении пользователя возвращает пустую структуру пользователя и ошибку базы данных.
 func (s *UserService) CreateUser(username string, telegramId string) (model.User, error) {
 	_, err := s.UserRepo.FindByTelegramID(telegramId)
 	if (err != nil) {
@@ -31,6 +43,13 @@ func (s *UserService) CreateUser(username string, telegramId string) (model.User
 	return temp, nil
 }
 
+// Функция заменяет роль пользователя на другую.
+//
+// Формальные параметры: role - роль, которая заменит текущую роль пользователя, telegram id для получения пользователя из базы.
+//
+// При успешном выполнении возвращает true.
+//
+// Если функция репозитория вернула ошибку, возвращает false.
 func (s *UserService) SetUserRole(role string, telegramId string) bool {
 	temp, err := s.UserRepo.FindByTelegramID(telegramId)
 	if err != nil {
@@ -45,6 +64,13 @@ func (s *UserService) SetUserRole(role string, telegramId string) bool {
 	return true
 }
 
+// Функция возвращает структуру пользователя из базы данных по telegram id.
+//
+// Формальные параметры: telegram id.
+//
+// При успешном выполнении возвращает пользователя.
+//
+// 1. В случае отсутствия пользователя с таким id возвращает пустую структуру пользователя и ошибку отсутствия.
 func (s *UserService) GetUserByTelegramId(id string) (model.User, error) {
 	temp, err := s.UserRepo.FindByTelegramID(id)
 	if err != nil {
