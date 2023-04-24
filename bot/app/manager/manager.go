@@ -1,11 +1,11 @@
 package manager
 
 import (
-	"log"
 	"sync"
 
 	"github.com/RullDeef/telegram-quiz-bot/controller"
 	"github.com/RullDeef/telegram-quiz-bot/model"
+	log "github.com/sirupsen/logrus"
 )
 
 type InteractorFactory func(
@@ -15,8 +15,10 @@ type InteractorFactory func(
 ) model.Interactor
 
 type BotManager struct {
-	userRepo          model.UserRepository
 	interactorFactory InteractorFactory
+	userRepo          model.UserRepository
+	statRepo          model.StatisticsRepository
+	logger            *log.Logger
 	subscriptions     []subscription
 	mutex             *sync.RWMutex
 }
@@ -30,10 +32,14 @@ type subscription struct {
 func NewBotManager(
 	interactorFactory InteractorFactory,
 	userRepo model.UserRepository,
+	statRepo model.StatisticsRepository,
+	logger *log.Logger,
 ) *BotManager {
 	return &BotManager{
-		userRepo:          userRepo,
 		interactorFactory: interactorFactory,
+		userRepo:          userRepo,
+		statRepo:          statRepo,
+		logger:            logger,
 		subscriptions:     nil,
 		mutex:             &sync.RWMutex{},
 	}
@@ -53,20 +59,13 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 
 	// per-user interaction
 	if msg.IsPrivate {
-		// TODO: wrap this in a map (maybe?)
 		if msg.Text == "/ник" {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
-				controller.NewUserController(
-					bm.userRepo,
-					interactor,
-				).ChangeNickname()
+				bm.newUserController(interactor).ChangeNickname()
 			})
 		} else if msg.Text == "/помощь" {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
-				controller.NewUserController(
-					bm.userRepo,
-					interactor,
-				).ShowHelp()
+				bm.newUserController(interactor).ShowHelp()
 			})
 		} else if msg.Text == "/создать" {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
@@ -132,6 +131,10 @@ func (bm *BotManager) runJob(chatID int64, job func(model.Interactor)) {
 		defer bm.removeSubscription(chatID)
 		job(interactor)
 	}(interactor, msgChan)
+}
+
+func (bm *BotManager) newUserController(interactor model.Interactor) *controller.UserController {
+	return controller.NewUserController(bm.userRepo, bm.statRepo, interactor, bm.logger)
 }
 
 func (bm *BotManager) addSubscription(
