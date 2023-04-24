@@ -7,12 +7,24 @@ import (
 	"gorm.io/gorm"
 )
 
+// БД сущность статистики
 type statEntity struct {
-	UserID                uint `gorm:"primaryKey"`
-	QuizzesCompleted      int
-	MeanQuizCompleteTime  float64
+	// Идентификатор полльзователя
+	UserID uint `gorm:"primaryKey"`
+
+	// Количество пройденных квизов
+	QuizzesCompleted int
+
+	// Среднее время прохождения квиза в секундах
+	MeanQuizCompleteTime float64
+
+	// Среднее время ответа на вопрос в секундах
 	MeanQuestionReplyTime float64
-	CorrectReplies        int
+
+	// Количество верных ответов
+	CorrectReplies int
+
+	// Процент верных  ответов (от 0 до 100)
 	CorrectRepliesPercent int
 }
 
@@ -26,6 +38,12 @@ func NewStatisticsRepo(db *gorm.DB) *ORMStatsRepository {
 	}
 }
 
+// Создание статистики пользователя
+//
+//  - stat - модель статистики
+//
+// Возможные ошибки:
+//  - Объект статистики для данного пользователя уже существует
 func (sr *ORMStatsRepository) Create(stat model.Statistics) error {
 	entity := sr.statModelToEntity(stat)
 	if err := sr.db.Create(&entity).Error; err != nil {
@@ -34,6 +52,13 @@ func (sr *ORMStatsRepository) Create(stat model.Statistics) error {
 	return nil
 }
 
+// Поиск статистики пользователя по его идентификатору
+//
+//  - id - идентификатор пользователя
+//
+// Возвращается объект статистики, соответствующий данному пользователю.
+// Возможные ошибки:
+//  - Отсутсвие объекта статистики в базе
 func (sr *ORMStatsRepository) FindByUserID(id int64) (model.Statistics, error) {
 	var entity statEntity
 	err := sr.db.First(&entity, "user_id = ?", uint(id)).Error
@@ -43,6 +68,13 @@ func (sr *ORMStatsRepository) FindByUserID(id int64) (model.Statistics, error) {
 	return sr.statEntityToModel(entity), nil
 }
 
+// Обновление объекта статистики.
+// Обновление осуществляется по идентификатору пользователя
+//
+//  - stat - обновлённый объект статистики
+//
+// Возвращает nil в случае успеха. Возможные ошибки:
+//  - Статистика с идентификатором stat.UserID не существует в базе
 func (sr *ORMStatsRepository) Update(stat model.Statistics) error {
 	entity := sr.statModelToEntity(stat)
 	if err := sr.db.Updates(&entity).Error; err != nil {
@@ -51,6 +83,12 @@ func (sr *ORMStatsRepository) Update(stat model.Statistics) error {
 	return nil
 }
 
+// Удаление объекта статистики.
+//
+//  - stat - удаляемый объект статистики
+//
+// Возращает nil в случае успеха. Возможные ошибки:
+//  - Внутренние ошибки базы данных
 func (sr *ORMStatsRepository) Delete(stat model.Statistics) error {
 	entity := sr.statModelToEntity(stat)
 	if err := sr.db.Delete(&entity).Error; err != nil {
@@ -63,6 +101,7 @@ func (statEntity) TableName() string {
 	return "statistics"
 }
 
+// Перевод модельной сущности статистики в сущность БД
 func (sr *ORMStatsRepository) statModelToEntity(stat model.Statistics) statEntity {
 	return statEntity{
 		UserID:                uint(stat.UserID),
@@ -74,6 +113,7 @@ func (sr *ORMStatsRepository) statModelToEntity(stat model.Statistics) statEntit
 	}
 }
 
+// Перевод сущности БД статистики в модельную сущность
 func (sr *ORMStatsRepository) statEntityToModel(stat statEntity) model.Statistics {
 	return model.Statistics{
 		UserID:                int64(stat.UserID),

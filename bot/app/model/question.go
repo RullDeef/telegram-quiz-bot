@@ -1,5 +1,6 @@
 package model
 
+// Модельная сущность Вопроса
 type Question struct {
 	ID      int64
 	Text    string

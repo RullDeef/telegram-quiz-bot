@@ -1,10 +1,24 @@
 package model
 
+// Ограничение базы данных для поля Роли
+const (
+  UserRoleUser = "USER";
+  UserRoleAdmin = "ADMIN"
+)
+
+// Модельная сущность Пользователь
 type User struct {
-	ID         int64
-	Nickname   string
+	// ID пользователя
+	ID int64
+
+	// Имя пользователя
+	Nickname string
+
+	// Telegram ID пользователя
 	TelegramID string
-	Role       string
+
+	// Роль пользователя (ADMIN, USER)
+	Role string
 }
 
 func NewUser(ID int64, Nickname, TelegramID, Role string) User {

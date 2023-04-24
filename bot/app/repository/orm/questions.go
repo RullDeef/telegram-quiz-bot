@@ -7,17 +7,33 @@ import (
 	"gorm.io/gorm"
 )
 
+// БД сущность ответа на вопрос
 type answerEntity struct {
-	ID         uint `gorm:"primaryKey"`
-	Text       string
-	IsCorrect  bool
+	// ID ответа
+	ID uint `gorm:"primaryKey"`
+
+	// Текст ответа
+	Text string
+
+	// Корректность ответа
+	IsCorrect bool
+
+	// ID вопроса, к которому данный ответ относится
 	QuestionID uint
 }
 
+// БД сущность вопроса
 type questionEntity struct {
-	ID      uint `gorm:"primaryKey"`
-	Text    string
-	Topic   string
+	// ID вопроса
+	ID uint `gorm:"primaryKey"`
+
+	// Текст вопроса
+	Text string
+
+	// Тематика, к которой относится данный вопрос
+	Topic string
+
+	// Перечень ответов
 	Answers []answerEntity `gorm:"foreignKey:QuestionID"`
 }
 
@@ -25,6 +41,7 @@ type QuestionsRepository struct {
 	db *gorm.DB
 }
 
+// Создание сущности Вопросы
 func NewQuestionsRepository(
 	db *gorm.DB,
 ) *QuestionsRepository {
@@ -33,6 +50,15 @@ func NewQuestionsRepository(
 	}
 }
 
+// Добавление вопроса в БД
+//
+//   - question - модель вопроса
+//
+// Возвращается созданный пользователь с установленным ID, а также ошибка выполнения.
+// В случае успешного выполнения возвращается nil.
+//
+// Возможные ошибки:
+//   - в случае ошибки создания возвращается в формате "failed to create question N"
 func (qr *QuestionsRepository) Create(question model.Question) (model.Question, error) {
 	entity := questionModelToEntity(question)
 	err := qr.db.Preload("Answers").Create(&entity).Error
@@ -42,6 +68,15 @@ func (qr *QuestionsRepository) Create(question model.Question) (model.Question, 
 	return questionEntityToModel(entity), nil
 }
 
+// Нахождение вопроса по его ID
+//
+//   - id - ID пользователя
+//
+// Возвращается модель вопроса, а также ошибка выполнения.
+// В случае успешного выполнения возвращается nil.
+//
+// Возможные ошибки:
+//   - в случае ошибки создания возвращается в формате "failed to find question with id=N"
 func (qr *QuestionsRepository) FindByID(id int64) (model.Question, error) {
 	var entity questionEntity
 	err := qr.db.Preload("Answers").First(&entity, id).Error
@@ -51,6 +86,15 @@ func (qr *QuestionsRepository) FindByID(id int64) (model.Question, error) {
 	return questionEntityToModel(entity), err
 }
 
+// Нахождение вопроса по тематике квиза
+//
+//   - topic - тематика квиза
+//
+// Возвращаются все вопросы по данной тематике, а также ошибка выполнения.
+// В случае успешного выполнения возвращается nil.
+//
+// Возможные ошибки:
+//   - в случае ошибки создания вопроса возвращается в формате "failed to find question with topic=N"
 func (qr *QuestionsRepository) FindByTopic(topic string) ([]model.Question, error) {
 	var entities []questionEntity
 	err := qr.db.Preload("Answers").Find(&entities, "topic = ?", topic).Error
@@ -64,6 +108,13 @@ func (qr *QuestionsRepository) FindByTopic(topic string) ([]model.Question, erro
 	return questions, nil
 }
 
+// Обновление вопроса в БД
+//
+//   - q - модель вопроса
+//
+// В случае успешного выполнения возвращается nil.
+// Возможные ошибки:
+//   - в случае ошибки обновления вопроса возвращается в формате "failed to update question with id=N"
 func (qr *QuestionsRepository) Update(q model.Question) error {
 	entity := questionModelToEntity(q)
 	err := qr.db.Preload("Answers").Updates(&entity).Error
@@ -73,6 +124,13 @@ func (qr *QuestionsRepository) Update(q model.Question) error {
 	return nil
 }
 
+// Удаление вопроса в БД
+//
+//   - id - ID вопроса
+//
+// В случае успешного выполнения возвращается nil.
+// Возможные ошибки:
+//   - в случае ошибки удаления вопроса возвращается в формате "failed to delete question with id=N"
 func (qr *QuestionsRepository) Delete(id int64) error {
 	err := qr.db.Preload("Answers").Delete(&questionEntity{}, id).Error
 	if err != nil {
@@ -89,6 +147,7 @@ func (answerEntity) TableName() string {
 	return "answers"
 }
 
+// Перевод модельной сущности вопроса в сущность БД
 func questionModelToEntity(q model.Question) questionEntity {
 	var answers []answerEntity
 	for _, ans := range q.Answers {
@@ -108,6 +167,7 @@ func questionModelToEntity(q model.Question) questionEntity {
 	}
 }
 
+// Перевод БД сущности вопроса в модельную
 func questionEntityToModel(entity questionEntity) model.Question {
 	var answers []model.Answer
 	for _, ans := range entity.Answers {

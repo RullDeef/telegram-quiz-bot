@@ -1,7 +1,13 @@
 package model
 
+// Модельная сущность Ответ
 type Answer struct {
-	ID        uint64
-	Text      string
+	// ID ответа
+	ID uint64
+
+	// Текст ответа
+	Text string
+
+	// Правильность ответа
 	IsСorrect bool
 }

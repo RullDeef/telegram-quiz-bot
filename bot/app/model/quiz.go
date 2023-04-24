@@ -1,7 +1,13 @@
 package model
 
+// Модель Квиз
 type Quiz struct {
-	ID        int64
-	Topic     string
+	// ID квиза
+	ID int64
+
+	// Тематика квиза
+	Topic string
+
+	// Вопросы квиза
 	Questions []Question
 }
