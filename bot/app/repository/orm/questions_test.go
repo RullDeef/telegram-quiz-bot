@@ -30,14 +30,14 @@ func TestQuestionInterface(t *testing.T) {
 	})
 
 	t.Run("FindByID", func(t *testing.T) {
-		_, err := question_repo.FindById(question_add.ID)
+		_, err := question_repo.FindByID(question_add.ID)
 		if err != nil {
 			t.Errorf("FindByID no one question; want 1")
 		}
 	})
 
 	t.Run("FindByIDFail", func(t *testing.T) {
-		_, err := question_repo.FindById(question_add.ID + 200)
+		_, err := question_repo.FindByID(question_add.ID + 200)
 		if err == nil {
 			t.Errorf("FindByID got question; want 0")
 		}

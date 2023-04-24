@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 
 	model "github.com/RullDeef/telegram-quiz-bot/model"
 )
@@ -15,7 +16,6 @@ type QuizService struct {
 }
 
 func NewQuizService(
-	//QuizRepo model.QuizRepository,
 	QuestionRepo model.QuestionRepository,
 ) *QuizService {
 	return &QuizService{
@@ -24,7 +24,7 @@ func NewQuizService(
 	}
 }
 
-func (qs *QuizService) setNumQuestionsInQuiz(number int) {
+func (qs *QuizService) SetNumQuestionsInQuiz(number int) {
 	qs.nQuestsInQuiz = number
 }
 
@@ -32,12 +32,11 @@ func (qs *QuizService) setNumQuestionsInQuiz(number int) {
 // Принимает: тематику квиза
 // Возвращает: сформированный квиз из 15-ти вопросов по данной тематике и ошибку
 func (qs *QuizService) CreateQuiz(topic string) (model.Quiz, error) {
-	var quiz model.Quiz
+	quiz := model.Quiz{
+		Topic: topic,
+	}
 	var i_quest int
 	questions, err := qs.QuestionRepo.FindByTopic(topic)
-
-	//n_questions := len(questions)
-	//qs.nQuestsInQuiz = 15 // ??
 
 	for i := 0; i < qs.nQuestsInQuiz; i++ {
 		i_quest = rand.Intn(qs.nQuestsInQuiz)
@@ -50,11 +49,19 @@ func (qs *QuizService) CreateQuiz(topic string) (model.Quiz, error) {
 // Добавление вопроса
 // Возвращает идентификатор созданного вопроса
 func (qs *QuizService) AddQuestionToTopic(topic string, question string) (int64, error) {
-	q := model.Question{
+	topic = strings.Trim(topic, " \n\t")
+	question = strings.Trim(question, " \n\t")
+
+	if len(topic) == 0 {
+		return 0, fmt.Errorf("topic must not be empty")
+	}
+	if len(question) == 0 {
+		return 0, fmt.Errorf("question must not be empty")
+	}
+	q, err := qs.QuestionRepo.Create(model.Question{
 		Text:  question,
 		Topic: topic,
-	}
-	q, err := qs.QuestionRepo.Create(q)
+	})
 	if err != nil {
 		return 0, err
 	}
@@ -62,20 +69,27 @@ func (qs *QuizService) AddQuestionToTopic(topic string, question string) (int64,
 }
 
 // Добавление ответа к вопросу
-/*func (qs *QuizService) AddAnswer(questionID int64, answer string, isCorrect bool) error {
+func (qs *QuizService) AddAnswer(questionID int64, answer string, isCorrect bool) error {
 	q, err := qs.QuestionRepo.FindByID(questionID)
 	if err != nil {
 		return err
 	}
 
-	// валидировать строку answer (если она пустая, то ошибка)
+	answer = strings.Trim(answer, " \n\t")
+	if len(answer) == 0 {
+		return fmt.Errorf("question answer must not be empty")
+	}
 
-	// проверить, если правильный ответ уже есть и isCorrect = true -> ошибка
+	if isCorrect && q.HasCorrectAnswer() {
+		return fmt.Errorf("failed to add question answer: correct answer already exists")
+	}
 
-	// если никаких ошибок - добавить ответ в квесчон и апдейтнуть его в репозитории
-	// q.Answers = append...
+	q.Answers = append(q.Answers, model.Answer{
+		Text:      answer,
+		IsСorrect: isCorrect,
+	})
 	return qs.QuestionRepo.Update(q)
-}*/
+}
 
 // Просмотр вопросов одной тематики
 func (qs *QuizService) ViewQuestionsByTopic(topic string) ([]string, error) {

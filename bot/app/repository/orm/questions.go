@@ -42,7 +42,7 @@ func (qr *QuestionsRepository) Create(question model.Question) (model.Question, 
 	return questionEntityToModel(entity), nil
 }
 
-func (qr *QuestionsRepository) FindById(id int64) (model.Question, error) {
+func (qr *QuestionsRepository) FindByID(id int64) (model.Question, error) {
 	var entity questionEntity
 	err := qr.db.Preload("Answers").First(&entity, id).Error
 	if err != nil {

@@ -6,3 +6,12 @@ type Question struct {
 	Topic   string
 	Answers []Answer
 }
+
+func (q Question) HasCorrectAnswer() bool {
+	for _, answer := range q.Answers {
+		if answer.IsСorrect {
+			return true
+		}
+	}
+	return false
+}
