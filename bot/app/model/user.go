@@ -1,5 +1,11 @@
 package model
 
+// Ограничение базы данных для поля Роли
+const (
+  UserRoleUser = "USER";
+  UserRoleAdmin = "ADMIN"
+)
+
 // Модельная сущность Пользователь
 type User struct {
 	// ID пользователя

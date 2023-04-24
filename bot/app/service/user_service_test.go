@@ -15,9 +15,13 @@ func TestUserServiceCreateUser(t *testing.T) {
 	var repo model.UserRepository = &mem_repo.UserRepository{}
 	service := NewUserService(repo)
 	nickname := "Johnny"
+	nickname1 := "Joshua"
 	telegramId := "telegramID#0"
+	telegramId1 := "telegramID#1"
+	roleUser := model.UserRoleUser
+	roleAdmin := model.UserRoleAdmin
 	wrongRole := "superuser"
-	existing_user := model.User{Nickname: nickname, TelegramID: telegramId, Role: wrongRole}
+	existing_user := model.User{Nickname: nickname, TelegramID: telegramId, Role: roleUser}
 	_, err := repo.Create(existing_user)
 	if (err != nil) {
 		t.Errorf("Create database error")
@@ -34,16 +38,24 @@ func TestUserServiceCreateUser(t *testing.T) {
 	if (err != nil) {
 		t.Errorf("Delete database error")
 	}
-	t.Run("Add new user should return true", func(t *testing.T) {
+	t.Run("Add new user should return not null user with db id", func(t *testing.T) {
 		_, err := service.CreateUser(nickname, telegramId)
 		if (err != nil) {
 			t.Errorf("CreateUser new user; want true")
 		}
 	})
 
-	t.Run("Add new user should return not null user", func(t *testing.T) {
+	new_user := model.User{Nickname: nickname1, TelegramID: telegramId1, Role: roleAdmin}
+	_, err = repo.Create(new_user)
+	if (err != nil) {
+		t.Errorf("Create database error")
+	}
+	t.Run("Change role should be one of set roles", func(t *testing.T) {
 		res, _ := repo.FindByTelegramID(telegramId)
-		if (res != model.User{} && res.Nickname != nickname && res.TelegramID != telegramId && res.Role == wrongRole) {
+		res1, _ := repo.FindByTelegramID(telegramId1)
+		if (res != model.User{} && res.Nickname != nickname &&
+		res1 != model.User{} && res1.Nickname != nickname1 &&
+		(res.Role != wrongRole) && (res.Role == model.UserRoleUser || res.Role == model.UserRoleAdmin) && (res1.Role != wrongRole) && (res1.Role == model.UserRoleUser || res1.Role == model.UserRoleAdmin)){
 			t.Errorf("Role is not added accroding to inner rule")
 		}
 	})
@@ -58,8 +70,8 @@ func TestUserServiceSetUserRole(t *testing.T) {
 	nickname := "Johnny"
 	telegramId := "telegramID#1"
 	wrongTelegramId := "telegramID#2"
-	role := "user"
-	updateRole := "admin"
+	role := model.UserRoleUser
+	updateRole := model.UserRoleAdmin
 	existing_user := model.User{Nickname: nickname, TelegramID: telegramId, Role: role}
 	_, err := repo.Create(existing_user)
 	if (err != nil) {
@@ -90,7 +102,7 @@ func TestUserServiceGetUserByTelegramId(t *testing.T) {
 	nickname := "Johnny"
 	telegramId := "telegramID#1"
 	wrongTelegramId := "telegramID#2"
-	role := "user"
+	role := model.UserRoleUser;
 	existing_user := model.User{Nickname: nickname, TelegramID: telegramId, Role: role}
 	_, err := repo.Create(existing_user)
 	if (err != nil) {

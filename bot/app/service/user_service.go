@@ -35,7 +35,7 @@ func (s *UserService) CreateUser(username string, telegramId string) (model.User
 	var user model.User
 	user.Nickname = username
 	user.TelegramID = telegramId
-	user.Role = "user"
+	user.Role = model.UserRoleUser
 	temp, err := s.UserRepo.Create(user)
 	if (err != nil) {
 		return model.User{}, errors.New("Database error")
