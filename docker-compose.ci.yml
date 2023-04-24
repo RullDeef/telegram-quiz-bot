@@ -38,6 +38,7 @@ services:
       POSTGRES_PASSWORD: root
   godoc:
     container_name: godoc
+    restart: unless-stopped
     build: ./godoc
     volumes:
       - ./bot/app:/usr/src/app
