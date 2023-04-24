@@ -52,13 +52,13 @@ func NewQuestionsRepository(
 
 // Добавление вопроса в БД
 //
-//  - question - модель вопроса
+//   - question - модель вопроса
 //
 // Возвращается созданный пользователь с установленным ID, а также ошибка выполнения.
 // В случае успешного выполнения возвращается nil.
 //
 // Возможные ошибки:
-//	- в случае ошибки создания возвращается в формате "failed to create question N"
+//   - в случае ошибки создания возвращается в формате "failed to create question N"
 func (qr *QuestionsRepository) Create(question model.Question) (model.Question, error) {
 	entity := questionModelToEntity(question)
 	err := qr.db.Preload("Answers").Create(&entity).Error
@@ -70,14 +70,14 @@ func (qr *QuestionsRepository) Create(question model.Question) (model.Question, 
 
 // Нахождение вопроса по его ID
 //
-//  - id - ID пользователя
+//   - id - ID пользователя
 //
 // Возвращается модель вопроса, а также ошибка выполнения.
 // В случае успешного выполнения возвращается nil.
 //
 // Возможные ошибки:
-//	- в случае ошибки создания возвращается в формате "failed to find question with id=N"
-func (qr *QuestionsRepository) FindById(id int64) (model.Question, error) {
+//   - в случае ошибки создания возвращается в формате "failed to find question with id=N"
+func (qr *QuestionsRepository) FindByID(id int64) (model.Question, error) {
 	var entity questionEntity
 	err := qr.db.Preload("Answers").First(&entity, id).Error
 	if err != nil {
@@ -88,13 +88,13 @@ func (qr *QuestionsRepository) FindById(id int64) (model.Question, error) {
 
 // Нахождение вопроса по тематике квиза
 //
-//  - topic - тематика квиза
+//   - topic - тематика квиза
 //
 // Возвращаются все вопросы по данной тематике, а также ошибка выполнения.
 // В случае успешного выполнения возвращается nil.
 //
 // Возможные ошибки:
-//	- в случае ошибки создания вопроса возвращается в формате "failed to find question with topic=N"
+//   - в случае ошибки создания вопроса возвращается в формате "failed to find question with topic=N"
 func (qr *QuestionsRepository) FindByTopic(topic string) ([]model.Question, error) {
 	var entities []questionEntity
 	err := qr.db.Preload("Answers").Find(&entities, "topic = ?", topic).Error
@@ -110,11 +110,11 @@ func (qr *QuestionsRepository) FindByTopic(topic string) ([]model.Question, erro
 
 // Обновление вопроса в БД
 //
-//  - q - модель вопроса
+//   - q - модель вопроса
 //
 // В случае успешного выполнения возвращается nil.
 // Возможные ошибки:
-//	- в случае ошибки обновления вопроса возвращается в формате "failed to update question with id=N"
+//   - в случае ошибки обновления вопроса возвращается в формате "failed to update question with id=N"
 func (qr *QuestionsRepository) Update(q model.Question) error {
 	entity := questionModelToEntity(q)
 	err := qr.db.Preload("Answers").Updates(&entity).Error
@@ -126,11 +126,11 @@ func (qr *QuestionsRepository) Update(q model.Question) error {
 
 // Удаление вопроса в БД
 //
-//  - id - ID вопроса
+//   - id - ID вопроса
 //
 // В случае успешного выполнения возвращается nil.
 // Возможные ошибки:
-//	- в случае ошибки удаления вопроса возвращается в формате "failed to delete question with id=N"
+//   - в случае ошибки удаления вопроса возвращается в формате "failed to delete question with id=N"
 func (qr *QuestionsRepository) Delete(id int64) error {
 	err := qr.db.Preload("Answers").Delete(&questionEntity{}, id).Error
 	if err != nil {

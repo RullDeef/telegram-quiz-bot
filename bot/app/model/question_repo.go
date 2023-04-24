@@ -4,10 +4,10 @@ package model
 type QuestionRepository interface {
 
 	// Создаёт новый вопрос
-	Create(question Question) error
+	Create(question Question) (Question, error)
 
 	// Производит поиск вопроса по идентификатору
-	FindById(id int64) (Question, error)
+	FindByID(id int64) (Question, error)
 
 	// Производит поиск вопросов по тематике
 	FindByTopic(topic string) ([]Question, error)

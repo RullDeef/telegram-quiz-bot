@@ -2,16 +2,17 @@ package model
 
 // Модельная сущность Вопроса
 type Question struct {
-	// ID вопроса
-	ID int64
-
-	// Текст вопроса
-	Text string
-
-	// Тематика вопроса
-	Topic string
-
-	// Ответы на вопрос.
-	// Должна содержать максимум 1 ответ с IsCorrect = true.
+	ID      int64
+	Text    string
+	Topic   string
 	Answers []Answer
+}
+
+func (q Question) HasCorrectAnswer() bool {
+	for _, answer := range q.Answers {
+		if answer.IsСorrect {
+			return true
+		}
+	}
+	return false
 }
