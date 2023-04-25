@@ -59,19 +59,19 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 
 	// per-user interaction
 	if msg.IsPrivate {
-		if msg.Text == "/регистрация" {
+		if msg.Text == commandRegister {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				bm.newUserController(interactor).Register(*msg.Sender)
 			})
-		} else if msg.Text == "/ник" {
+		} else if msg.Text == commandChangeNickname {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				bm.newUserController(interactor).ChangeNickname()
 			})
-		} else if msg.Text == "/помощь" {
+		} else if msg.Text == commandHelp {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				bm.newUserController(interactor).ShowHelp()
 			})
-		} else if msg.Text == "/создать" {
+		} else if msg.Text == commandCreateQuiz {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				// TODO: check sender role here
 				controller.NewAdminController(
@@ -79,7 +79,7 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 					interactor,
 				).CreateQuiz()
 			})
-		} else if msg.Text == "/просмотр" {
+		} else if msg.Text == commandViewQuizzes {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				// TODO: check sender role here
 				controller.NewAdminController(
@@ -87,7 +87,7 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 					interactor,
 				).ViewMyQuizzes()
 			})
-		} else if msg.Text == "/редактировать" {
+		} else if msg.Text == commandEditQuiz {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				// TODO: check sender role here
 				controller.NewAdminController(
@@ -97,7 +97,7 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 			})
 		}
 	} else { // message came from group chat
-		if msg.Text == "/квиз" {
+		if msg.Text == commandStartQuiz {
 			// start new quiz
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				controller.NewSessionController(
