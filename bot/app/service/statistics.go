@@ -85,12 +85,14 @@ func (ss *StatisticsService) SubmitCorrectAnswer(user model.User, answerTime tim
 		return err
 	}
 
-	totalAnswers := 1.0
-	if stat.CorrectReplies > 0 {
-		totalAnswers = float64(stat.CorrectReplies) / stat.CorrectRepliesPercent
-	}
+	totalTime := stat.MeanQuestionReplyTime * float64(stat.TotalReplies)
+
+	stat.TotalReplies += 1
 	stat.CorrectReplies += 1
-	stat.CorrectRepliesPercent = float64(stat.CorrectReplies) / totalAnswers
+	stat.CorrectRepliesPercent = float64(stat.CorrectReplies) / float64(stat.TotalReplies)
+
+	totalTime += answerTime.Seconds()
+	stat.MeanQuestionReplyTime = totalTime / float64(stat.TotalReplies)
 
 	err = ss.statRepo.Update(stat)
 	if err != nil {
@@ -113,12 +115,13 @@ func (ss *StatisticsService) SubmitWrongAnswer(user model.User, answerTime time.
 		return err
 	}
 
-	totalAnswers := 0.0
-	if stat.CorrectReplies > 0 {
-		totalAnswers = float64(stat.CorrectReplies) / stat.CorrectRepliesPercent
-	}
-	totalAnswers += 1.0
-	stat.CorrectRepliesPercent = float64(stat.CorrectReplies) / totalAnswers
+	totalTime := stat.MeanQuestionReplyTime * float64(stat.TotalReplies)
+
+	stat.TotalReplies += 1
+	stat.CorrectRepliesPercent = float64(stat.CorrectReplies) / float64(stat.TotalReplies)
+
+	totalTime += answerTime.Seconds()
+	stat.MeanQuestionReplyTime = totalTime / float64(stat.TotalReplies)
 
 	err = ss.statRepo.Update(stat)
 	if err != nil {

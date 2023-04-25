@@ -28,6 +28,7 @@ create table statistics (
     quizzes_completed integer,
     mean_quiz_complete_time real,
     mean_question_reply_time real,
+    total_replies integer,
     correct_replies integer,
     correct_replies_percent integer
 );
