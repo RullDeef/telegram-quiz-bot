@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/RullDeef/telegram-quiz-bot/manager"
@@ -15,8 +16,7 @@ import (
 func main() {
 	logger := log.New()
 
-	dsn := "host=db user=postgres password=root port=5432 dbname=quizdb"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{SkipDefaultTransaction: true})
+	db, err := buildDBConnection()
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -31,4 +31,15 @@ func main() {
 	}, userRepo, statRepo, logger)
 
 	publisher.Run(botMngr)
+}
+
+func buildDBConnection() (*gorm.DB, error) {
+	dsn := fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_DBNAME"),
+	)
+	return gorm.Open(postgres.Open(dsn), &gorm.Config{SkipDefaultTransaction: true})
 }

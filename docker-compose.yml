@@ -23,3 +23,8 @@ services:
     command: go run ./cmd/quizbot
     environment:
       TELEGRAM_API_TOKEN: ${TELEGRAM_API_TOKEN}
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_DBNAME: quizdb
