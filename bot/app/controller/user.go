@@ -155,9 +155,13 @@ func (uc *UserController) sendResponse(format string, args ...interface{}) {
 	uc.interactor.SendResponse(model.NewResponse(msgText))
 }
 
-// Ожидает получения следующего сообщения от пользователя
+// Ожидает получения следующего сообщения от пользователя.
+// По истечении заданного времени возвращает ошибку.
 //
-// По истечении заданного времени возвращает ошибку
+// `select` блокирует выполнение текущей горутины до тех пор, пока не поступит
+// сообщение на одной из ветвей `case`.
+// `time.After` возвращает канал, в который посылается сообщение по истечении
+// заданного промежутка времени.
 func (uc *UserController) waitForNextMessageWithTimeout(timeout time.Duration) (model.Message, error) {
 	select {
 	case <-time.After(timeout):
