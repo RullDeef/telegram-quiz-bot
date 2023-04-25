@@ -59,7 +59,11 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 
 	// per-user interaction
 	if msg.IsPrivate {
-		if msg.Text == "/ник" {
+		if msg.Text == "/регистрация" {
+			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
+				bm.newUserController(interactor).Register(*msg.Sender)
+			})
+		} else if msg.Text == "/ник" {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				bm.newUserController(interactor).ChangeNickname()
 			})

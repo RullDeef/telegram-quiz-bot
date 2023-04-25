@@ -36,6 +36,26 @@ func NewUserController(
 	}
 }
 
+// Регистрирует нового пользователя в системе
+func (uc *UserController) Register(user model.User) {
+	_, err := uc.userRepo.FindByID(user.ID)
+	if err == nil {
+		uc.sendResponse("Вы уже зарегистрированы.")
+		return
+	}
+
+	if user, err = uc.userRepo.Create(user); err == nil {
+		if err = uc.statRepo.Create(model.Statistics{UserID: user.ID}); err == nil {
+			uc.sendResponse(`Вы успешно зарегистрированы под ником %s`, user.Nickname)
+		}
+	}
+
+	if err != nil {
+		log.Error(err)
+		uc.sendResponse("Произошла ошибка. Попробуйте повторить запрос позже.")
+	}
+}
+
 // Изменяет имя пользователя
 //
 // Соответствует команде `/ник`
@@ -50,7 +70,7 @@ func (uc *UserController) ChangeNickname() {
 			break
 		}
 
-		if isNicknameValid(msg.Text) {
+		if !isNicknameValid(msg.Text) {
 			uc.sendResponse("Некорректный никнейм, выберите другой.")
 			continue
 		}
