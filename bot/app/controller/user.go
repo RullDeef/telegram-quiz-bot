@@ -46,7 +46,7 @@ func (uc *UserController) Register(user model.User) {
 
 	if user, err = uc.userRepo.Create(user); err == nil {
 		if err = uc.statRepo.Create(model.Statistics{UserID: user.ID}); err == nil {
-			uc.sendResponse(`Вы успешно зарегистрированы под ником %s`, user.Nickname)
+			uc.sendResponse(`Вы успешно зарегистрированы под ником %s.`, user.Nickname)
 		}
 	}
 

@@ -63,17 +63,6 @@ func (mi *MockInteractor) SlipButtonAction(sender *model.User, actionIDs ...int6
 
 func (mi *MockInteractor) Expect(message string) {
 	mi.expectations = append(mi.expectations, message)
-	// go func(mi *MockInteractor, message string) {
-	// 	if response, ok := <-mi.responses; ok {
-	// 		if response.Text != message {
-	// 			mi.unmatchedResponses = append(mi.unmatchedResponses,
-	// 				responseMatch{
-	// 					expectation: message,
-	// 					response:    response,
-	// 				})
-	// 		}
-	// 	}
-	// }(mi, message)
 }
 
 func (mi *MockInteractor) MessageChan() chan model.Message {

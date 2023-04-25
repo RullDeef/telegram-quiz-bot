@@ -20,7 +20,7 @@ func TestUserController_Register(t *testing.T) {
 		Role:       model.UserRoleUser,
 	}
 
-	interactor.Expect("Вы успешно зарегистрированы под ником Vasya")
+	interactor.Expect("Вы успешно зарегистрированы под ником Vasya.")
 
 	controller.Register(userVasya)
 }
