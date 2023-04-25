@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	defaultWaitDuration = time.Duration(30) * time.Second
+	defaultWaitDuration = 30 * time.Second
 
 	actionGameRules = iota
 	actionStatistics
