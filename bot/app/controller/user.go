@@ -2,54 +2,182 @@ package controller
 
 import (
 	"fmt"
-	"log"
+	"time"
 
 	model "github.com/RullDeef/telegram-quiz-bot/model"
+	log "github.com/sirupsen/logrus"
+)
+
+const (
+	defaultWaitDuration = 30 * time.Second
+
+	actionGameRules = iota
+	actionStatistics
 )
 
 type UserController struct {
 	userRepo   model.UserRepository
+	statRepo   model.StatisticsRepository
 	interactor model.Interactor
+	logger     *log.Logger
 }
 
-func NewUserController(repo model.UserRepository, interactor model.Interactor) *UserController {
+func NewUserController(
+	userRepo model.UserRepository,
+	statRepo model.StatisticsRepository,
+	interactor model.Interactor,
+	logger *log.Logger,
+) *UserController {
 	return &UserController{
-		userRepo:   repo,
+		userRepo:   userRepo,
+		statRepo:   statRepo,
 		interactor: interactor,
+		logger:     logger,
 	}
 }
 
-func (uc *UserController) ChangeNickname() {
-	response := "Напишите, как мне Вас теперь называть?"
-	uc.interactor.SendResponse(model.NewResponse(response))
+// Регистрирует нового пользователя в системе
+func (uc *UserController) Register(user model.User) {
+	_, err := uc.userRepo.FindByID(user.ID)
+	if err == nil {
+		uc.sendResponse("Вы уже зарегистрированы.")
+		return
+	}
 
-	// wait for next message
-	msg := <-uc.interactor.MessageChan()
+	if user, err = uc.userRepo.Create(user); err == nil {
+		if err = uc.statRepo.Create(model.Statistics{UserID: user.ID}); err == nil {
+			uc.sendResponse(`Вы успешно зарегистрированы под ником %s.`, user.Nickname)
+		}
+	}
 
-	// TODO: store new nickname (better check before!)
-	log.Printf("[storing nickname: \"%s\"]", msg.Text)
-
-	response = "Ваш никнейм сохранен. Рад иметь с вами дело, %s."
-	response = fmt.Sprintf(response, msg.Text)
-	uc.interactor.SendResponse(model.NewResponse(response))
+	if err != nil {
+		log.Error(err)
+		uc.sendResponse("Произошла ошибка. Попробуйте повторить запрос позже.")
+	}
 }
 
+// Изменяет имя пользователя
+//
+// Соответствует команде `/ник`
+func (uc *UserController) ChangeNickname() {
+	uc.sendResponse("Напишите, как мне Вас теперь называть?")
+
+	for {
+		msg, err := uc.waitForNextMessageWithTimeout(defaultWaitDuration)
+		if err != nil {
+			response := "Время для смены никнейма вышло. Для смены никнейма повторно используйте команду /ник."
+			uc.sendResponse(response)
+			break
+		}
+
+		if !isNicknameValid(msg.Text) {
+			uc.sendResponse("Некорректный никнейм, выберите другой.")
+			continue
+		}
+
+		msg.Sender.Nickname = msg.Text
+		err = uc.userRepo.Update(*msg.Sender)
+		if err != nil {
+			uc.sendResponse("Не удалось обновить никнейм. Попробуйте снова через какое-то время.")
+		} else {
+			response := "Ваш новый никнейм сохранен. Рад иметь с вами дело, %s."
+			uc.sendResponse(response, msg.Text)
+		}
+		break
+	}
+}
+
+// Показывает справку с правилами игры и со статистикой
+//
+// Соответсвует команде `/помощь`
 func (uc *UserController) ShowHelp() {
 	responseText := "Для получения подробной информации используйте кнопки ниже."
 	response := model.NewResponse(responseText)
-	response.AddAction(1, "Правила игры")
-	response.AddAction(2, "Статистика")
+	response.AddAction(actionGameRules, "Правила игры")
+	response.AddAction(actionStatistics, "Статистика")
 	uc.interactor.SendResponse(response)
 
-	msg := <-uc.interactor.MessageChan()
-	switch msg.ActionID() {
-	case 1:
-		uc.interactor.SendResponse(model.NewResponse(
-			"Правила игры: бла бла бла.",
-		))
-	case 2:
-		uc.interactor.SendResponse(model.NewResponse(
-			"Ваша статистика: бла бла бла",
-		))
+	for {
+		msg, err := uc.waitForNextMessageWithTimeout(defaultWaitDuration)
+		if err != nil {
+			break
+		}
+
+		switch msg.ActionID() {
+		case actionGameRules:
+			uc.showGameRules()
+		case actionStatistics:
+			uc.showStatisticsForUser(msg.Sender.ID)
+		}
 	}
+}
+
+// Показывает правила игры
+//
+// Соответствует команде `/правила`
+func (uc *UserController) showGameRules() {
+	uc.sendResponse(`Правила игры:
+
+Тут должны быть правила, но их пока нет.`)
+}
+
+// Выводит статистику конкретного пользователя
+//
+// Соответствует команде `/статистика`
+func (uc *UserController) showStatisticsForUser(userID int64) {
+	stat, err := uc.statRepo.FindByUserID(userID)
+	if err != nil {
+		// must never happen - statistics must me created with user at the same time
+		uc.logger.
+			WithField("userID", userID).
+			Error("failed to find statistics")
+		uc.sendResponse("К сожалению, произошла ошибка. Попробуйте повторить ваш запрос позже.")
+	} else {
+		uc.sendResponse(`Ваша статистика:
+
+Количество игр: %d.
+Среднее время одной игры: %.1f сек.
+Среднее время ответа: %.1f сек.
+Верных ответов: %d (%d %%).`,
+			stat.QuizzesCompleted,
+			stat.MeanQuizCompleteTime,
+			stat.MeanQuestionReplyTime,
+			stat.CorrectReplies,
+			int(stat.CorrectRepliesPercent*100))
+	}
+}
+
+// Отправляет ответ, одновременно логируя отправленное сообщение
+func (uc *UserController) sendResponse(format string, args ...interface{}) {
+	msgText := fmt.Sprintf(format, args...)
+
+	uc.logger.Info(msgText)
+	uc.interactor.SendResponse(model.NewResponse(msgText))
+}
+
+// Ожидает получения следующего сообщения от пользователя.
+// По истечении заданного времени возвращает ошибку.
+//
+// `select` блокирует выполнение текущей горутины до тех пор, пока не поступит
+// сообщение на одной из ветвей `case`.
+// `time.After` возвращает канал, в который посылается сообщение по истечении
+// заданного промежутка времени.
+func (uc *UserController) waitForNextMessageWithTimeout(timeout time.Duration) (model.Message, error) {
+	select {
+	case <-time.After(timeout):
+		uc.logger.WithField("duration", timeout).Warn("timeout")
+		return model.Message{}, fmt.Errorf("timed out")
+	case msg := <-uc.interactor.MessageChan():
+		uc.logger.
+			WithField("senderID", msg.Sender.ID).
+			WithField("nickname", msg.Sender.Nickname).
+			WithField("msg", msg.Text).
+			Info(`got message`)
+		return msg, nil
+	}
+}
+
+// Проверяет корректность ника пользователя
+func isNicknameValid(nickname string) bool {
+	return len(nickname) > 0
 }
