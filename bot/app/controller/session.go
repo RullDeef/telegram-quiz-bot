@@ -5,22 +5,23 @@ import (
 	"time"
 
 	model "github.com/RullDeef/telegram-quiz-bot/model"
+	"github.com/RullDeef/telegram-quiz-bot/service"
 )
 
 type SessionController struct {
-	userRepo   model.UserRepository
-	interactor model.Interactor
-	state      *model.SessionState // maybe not needed here as field
+	userService *service.UserService
+	interactor  model.Interactor
+	state       *model.SessionState // maybe not needed here as field
 }
 
 func NewSessionController(
-	userRepo model.UserRepository,
+	userService *service.UserService,
 	interactor model.Interactor,
 ) *SessionController {
 	return &SessionController{
-		userRepo:   userRepo,
-		interactor: interactor,
-		state:      nil,
+		userService: userService,
+		interactor:  interactor,
+		state:       nil,
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 
 	"github.com/RullDeef/telegram-quiz-bot/controller"
 	"github.com/RullDeef/telegram-quiz-bot/model"
+	"github.com/RullDeef/telegram-quiz-bot/service"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -16,8 +17,8 @@ type InteractorFactory func(
 
 type BotManager struct {
 	interactorFactory InteractorFactory
-	userRepo          model.UserRepository
-	statRepo          model.StatisticsRepository
+	userService       *service.UserService
+	statService       *service.StatisticsService
 	logger            *log.Logger
 	subscriptions     []subscription
 	mutex             *sync.RWMutex
@@ -31,14 +32,14 @@ type subscription struct {
 
 func NewBotManager(
 	interactorFactory InteractorFactory,
-	userRepo model.UserRepository,
-	statRepo model.StatisticsRepository,
+	userService *service.UserService,
+	statService *service.StatisticsService,
 	logger *log.Logger,
 ) *BotManager {
 	return &BotManager{
 		interactorFactory: interactorFactory,
-		userRepo:          userRepo,
-		statRepo:          statRepo,
+		userService:       userService,
+		statService:       statService,
 		logger:            logger,
 		subscriptions:     nil,
 		mutex:             &sync.RWMutex{},
@@ -75,7 +76,7 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				// TODO: check sender role here
 				controller.NewAdminController(
-					bm.userRepo,
+					bm.userService,
 					interactor,
 				).CreateQuiz()
 			})
@@ -83,7 +84,7 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				// TODO: check sender role here
 				controller.NewAdminController(
-					bm.userRepo,
+					bm.userService,
 					interactor,
 				).ViewMyQuizzes()
 			})
@@ -91,7 +92,7 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				// TODO: check sender role here
 				controller.NewAdminController(
-					bm.userRepo,
+					bm.userService,
 					interactor,
 				).EditQuiz()
 			})
@@ -101,7 +102,7 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 			// start new quiz
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				controller.NewSessionController(
-					bm.userRepo,
+					bm.userService,
 					interactor,
 				).Run()
 			})
@@ -138,7 +139,12 @@ func (bm *BotManager) runJob(chatID int64, job func(model.Interactor)) {
 }
 
 func (bm *BotManager) newUserController(interactor model.Interactor) *controller.UserController {
-	return controller.NewUserController(bm.userRepo, bm.statRepo, interactor, bm.logger)
+	return controller.NewUserController(
+		bm.userService,
+		bm.statService,
+		interactor,
+		bm.logger,
+	)
 }
 
 func (bm *BotManager) addSubscription(
