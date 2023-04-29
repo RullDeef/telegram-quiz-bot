@@ -111,6 +111,10 @@ func (ss *StatisticsService) SubmitAnswer(user model.User, isCorrect bool, answe
 }
 
 // Сбрасывает статистику пользователя в значения по-умолчанию (нули)
+//
+// Возвращает ошибку в следующих случаях:
+//   - объект статистики для данного пользователя не найден
+//   - ошибка при записи данных
 func (ss *StatisticsService) ResetStatistics(user model.User) error {
 	ss.logger.
 		WithFields(log.Fields{"user": user}).
