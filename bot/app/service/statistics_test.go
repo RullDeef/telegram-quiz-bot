@@ -23,6 +23,9 @@ func TestStatisticsService(t *testing.T) {
 		t.FailNow()
 	}
 
+	correctAnswer := true
+	wrongAnswer := false
+
 	statRepo := mem_repo.NewStatisticsRepository()
 	logger := log.New()
 
@@ -36,7 +39,7 @@ func TestStatisticsService(t *testing.T) {
 	})
 
 	t.Run("Submit wrong answer", func(t *testing.T) {
-		err = statService.SubmitWrongAnswer(user, time.Minute)
+		err = statService.SubmitAnswer(user, wrongAnswer, time.Minute)
 		if err != nil {
 			t.Error(err)
 		}
@@ -57,7 +60,7 @@ func TestStatisticsService(t *testing.T) {
 	})
 
 	t.Run("Submit correct answer", func(t *testing.T) {
-		err = statService.SubmitCorrectAnswer(user, time.Second)
+		err = statService.SubmitAnswer(user, correctAnswer, time.Second)
 		if err != nil {
 			t.Error(err)
 		}

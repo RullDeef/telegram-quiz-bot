@@ -49,7 +49,11 @@ func (ss *StatisticsService) GetStatistics(user model.User) (model.Statistics, e
 // Увеличивает счетчик пройденных квизов для данного пользователя
 //
 // Также обновляет среднее время прохождения квиза.
-// Данный метод необходимо вызывать один раз для каждого пользователя после завершения квиза
+// Данный метод необходимо вызывать один раз для каждого пользователя после завершения квиза.
+//
+// Возвращает ошибку в следующих случаях:
+//   - объект статистики для данного пользователя не найден
+//   - ошибка при записи данных
 func (ss *StatisticsService) SubmitQuizComplete(user model.User, totalQuizTime time.Duration) error {
 	ss.logger.
 		WithFields(log.Fields{"user": user, "totalQuizTime": totalQuizTime}).
@@ -71,14 +75,17 @@ func (ss *StatisticsService) SubmitQuizComplete(user model.User, totalQuizTime t
 	return err
 }
 
-// Обновляет счетчик правильных ответов
+// Обновляет счетчик правильных ответов и среднее время ответа на вопрос
 //
-// Также обновляет среднее время ответа на вопрос.
-// Данный метод необходимо вызывать в случае, если пользователь дал верный ответ на вопрос
-func (ss *StatisticsService) SubmitCorrectAnswer(user model.User, answerTime time.Duration) error {
+// Данный метод необходимо вызывать после того, как пользователь дал первый ответ на вопрос.
+//
+// Возвращает ошибку в следующих случаях:
+//   - объект статистики для данного пользователя не найден
+//   - ошибка при записи данных
+func (ss *StatisticsService) SubmitAnswer(user model.User, isCorrect bool, answerTime time.Duration) error {
 	ss.logger.
-		WithFields(log.Fields{"user": user, "answerTime": answerTime}).
-		Info("SubmitCorrectAnswer")
+		WithFields(log.Fields{"user": user, "isCorrect": isCorrect, "answerTime": answerTime}).
+		Info("SubmitAnswer")
 	stat, err := ss.statRepo.FindByUserID(user.ID)
 	if err != nil {
 		ss.logger.Error(err)
@@ -88,36 +95,9 @@ func (ss *StatisticsService) SubmitCorrectAnswer(user model.User, answerTime tim
 	totalTime := stat.MeanQuestionReplyTime * float64(stat.TotalReplies)
 
 	stat.TotalReplies += 1
-	stat.CorrectReplies += 1
-	stat.CorrectRepliesPercent = float64(stat.CorrectReplies) / float64(stat.TotalReplies)
-
-	totalTime += answerTime.Seconds()
-	stat.MeanQuestionReplyTime = totalTime / float64(stat.TotalReplies)
-
-	err = ss.statRepo.Update(stat)
-	if err != nil {
-		ss.logger.Error(err)
+	if isCorrect {
+		stat.CorrectReplies += 1
 	}
-	return err
-}
-
-// Обновляет счетчик правильных ответов
-//
-// Также обновляет среднее время ответа на вопрос.
-// Данный метод необходимо вызывать в случае, если пользователь дал первый ошибочный ответ на вопрос
-func (ss *StatisticsService) SubmitWrongAnswer(user model.User, answerTime time.Duration) error {
-	ss.logger.
-		WithFields(log.Fields{"user": user, "answerTime": answerTime}).
-		Info("SubmitCorrectAnswer")
-	stat, err := ss.statRepo.FindByUserID(user.ID)
-	if err != nil {
-		ss.logger.Error(err)
-		return err
-	}
-
-	totalTime := stat.MeanQuestionReplyTime * float64(stat.TotalReplies)
-
-	stat.TotalReplies += 1
 	stat.CorrectRepliesPercent = float64(stat.CorrectReplies) / float64(stat.TotalReplies)
 
 	totalTime += answerTime.Seconds()
