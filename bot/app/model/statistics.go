@@ -14,6 +14,9 @@ type Statistics struct {
 	// Среднее время ответа в секундах
 	MeanQuestionReplyTime float64
 
+	// Общее количество ответов
+	TotalReplies          uint
+
 	// Количество верных ответов
 	CorrectReplies        uint
 

@@ -21,6 +21,9 @@ type statEntity struct {
 	// Среднее время ответа на вопрос в секундах
 	MeanQuestionReplyTime float64
 
+	// Общее количество ответов
+	TotalReplies int
+
 	// Количество верных ответов
 	CorrectReplies int
 
@@ -40,10 +43,10 @@ func NewStatisticsRepo(db *gorm.DB) *ORMStatsRepository {
 
 // Создание статистики пользователя
 //
-//  - stat - модель статистики
+//   - stat - модель статистики
 //
 // Возможные ошибки:
-//  - Объект статистики для данного пользователя уже существует
+//   - Объект статистики для данного пользователя уже существует
 func (sr *ORMStatsRepository) Create(stat model.Statistics) error {
 	entity := sr.statModelToEntity(stat)
 	if err := sr.db.Create(&entity).Error; err != nil {
@@ -54,11 +57,11 @@ func (sr *ORMStatsRepository) Create(stat model.Statistics) error {
 
 // Поиск статистики пользователя по его идентификатору
 //
-//  - id - идентификатор пользователя
+//   - id - идентификатор пользователя
 //
 // Возвращается объект статистики, соответствующий данному пользователю.
 // Возможные ошибки:
-//  - Отсутсвие объекта статистики в базе
+//   - Отсутсвие объекта статистики в базе
 func (sr *ORMStatsRepository) FindByUserID(id int64) (model.Statistics, error) {
 	var entity statEntity
 	err := sr.db.First(&entity, "user_id = ?", uint(id)).Error
@@ -71,10 +74,10 @@ func (sr *ORMStatsRepository) FindByUserID(id int64) (model.Statistics, error) {
 // Обновление объекта статистики.
 // Обновление осуществляется по идентификатору пользователя
 //
-//  - stat - обновлённый объект статистики
+//   - stat - обновлённый объект статистики
 //
 // Возвращает nil в случае успеха. Возможные ошибки:
-//  - Статистика с идентификатором stat.UserID не существует в базе
+//   - Статистика с идентификатором stat.UserID не существует в базе
 func (sr *ORMStatsRepository) Update(stat model.Statistics) error {
 	entity := sr.statModelToEntity(stat)
 	if err := sr.db.Updates(&entity).Error; err != nil {
@@ -85,10 +88,10 @@ func (sr *ORMStatsRepository) Update(stat model.Statistics) error {
 
 // Удаление объекта статистики.
 //
-//  - stat - удаляемый объект статистики
+//   - stat - удаляемый объект статистики
 //
 // Возращает nil в случае успеха. Возможные ошибки:
-//  - Внутренние ошибки базы данных
+//   - Внутренние ошибки базы данных
 func (sr *ORMStatsRepository) Delete(stat model.Statistics) error {
 	entity := sr.statModelToEntity(stat)
 	if err := sr.db.Delete(&entity).Error; err != nil {
@@ -108,6 +111,7 @@ func (sr *ORMStatsRepository) statModelToEntity(stat model.Statistics) statEntit
 		QuizzesCompleted:      int(stat.QuizzesCompleted),
 		MeanQuizCompleteTime:  stat.MeanQuizCompleteTime,
 		MeanQuestionReplyTime: stat.MeanQuestionReplyTime,
+		TotalReplies:          int(stat.TotalReplies),
 		CorrectReplies:        int(stat.CorrectReplies),
 		CorrectRepliesPercent: int(stat.CorrectRepliesPercent * 100),
 	}
@@ -120,6 +124,7 @@ func (sr *ORMStatsRepository) statEntityToModel(stat statEntity) model.Statistic
 		QuizzesCompleted:      uint(stat.QuizzesCompleted),
 		MeanQuizCompleteTime:  stat.MeanQuizCompleteTime,
 		MeanQuestionReplyTime: stat.MeanQuestionReplyTime,
+		TotalReplies:          uint(stat.TotalReplies),
 		CorrectReplies:        uint(stat.CorrectReplies),
 		CorrectRepliesPercent: float64(stat.CorrectRepliesPercent) / 100,
 	}
