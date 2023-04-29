@@ -49,7 +49,8 @@ func (s *UserService) CreateUser(username string, telegramId string) (model.User
 //
 // При успешном выполнении возвращает true.
 //
-// Если функция обновления пользователя репозитория вернула ошибку, возвращает false.
+//  1. Если пользователь с таким telegram id не найден в базе данных, возвращает false.
+//  2. Если функция обновления пользователя репозитория вернула ошибку, возвращает false.
 func (s *UserService) SetUserRole(role string, telegramId string) bool {
 	temp, err := s.UserRepo.FindByTelegramID(telegramId)
 	if err != nil {
@@ -77,4 +78,26 @@ func (s *UserService) GetUserByTelegramId(id string) (model.User, error) {
 		return model.User{}, errors.New("No user found")
 	}
 	return temp, nil
+}
+
+// Функция заменяет имя пользователя на другое.
+//
+// Формальные параметры: username - имя пользователя, которое заменит текущее имя пользователя, telegram id для получения пользователя из базы.
+//
+// При успешном выполнении возвращает true.
+//
+//  1. Если пользователь с таким telegram id не найден в базе данных, возвращает false.
+//  2. Если функция обновления пользователя репозитория вернула ошибку, возвращает false.
+func (s *UserService) ChangeUsername(username string, telegramId string) bool {
+	temp, err := s.UserRepo.FindByTelegramID(telegramId)
+	if err != nil {
+		return false
+	}
+	temp.Nickname = username
+	err = s.UserRepo.Update(temp)
+	if err != nil {
+		log.Printf("ERROR: %v", err)
+		return false
+	}
+	return true
 }

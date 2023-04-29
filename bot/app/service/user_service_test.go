@@ -127,3 +127,35 @@ func TestUserServiceGetUserByTelegramId(t *testing.T) {
 	})
 }
 
+// Change username
+// 1. Username changed -> return true
+// 2. User not found -> return false
+func TestUserServiceChangeUsername(t *testing.T) {
+	var repo model.UserRepository = &mem_repo.UserRepository{}
+	service := NewUserService(repo)
+	nickname := "Johnny"
+	updateNickname := "Johnny Silverhand"
+	telegramId := "telegramID#1"
+	wrongTelegramId := "telegramID#2"
+	role := model.UserRoleUser
+	existing_user := model.User{Nickname: nickname, TelegramID: telegramId, Role: role}
+	_, err := repo.Create(existing_user)
+	if (err != nil) {
+		t.Errorf("Create database error")
+	}
+
+	t.Run("Update username should return true", func(t *testing.T) {
+		status := service.ChangeUsername(updateNickname, telegramId)
+		if (status != true) {
+			t.Errorf("User is not existing should return false")
+		}
+	})
+
+	t.Run("Update username of not existing user should return false", func(t *testing.T) {
+		status := service.ChangeUsername(updateNickname, wrongTelegramId)
+		if (status != false) {
+			t.Errorf("User is not existing should return false")
+		}
+	})
+}
+
