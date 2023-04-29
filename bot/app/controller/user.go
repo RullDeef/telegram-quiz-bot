@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	model "github.com/RullDeef/telegram-quiz-bot/model"
+	"github.com/RullDeef/telegram-quiz-bot/model"
+	"github.com/RullDeef/telegram-quiz-bot/service"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -16,36 +17,36 @@ const (
 )
 
 type UserController struct {
-	userRepo   model.UserRepository
-	statRepo   model.StatisticsRepository
-	interactor model.Interactor
-	logger     *log.Logger
+	userService *service.UserService
+	statService *service.StatisticsService
+	interactor  model.Interactor
+	logger      *log.Logger
 }
 
 func NewUserController(
-	userRepo model.UserRepository,
-	statRepo model.StatisticsRepository,
+	userService *service.UserService,
+	statService *service.StatisticsService,
 	interactor model.Interactor,
 	logger *log.Logger,
 ) *UserController {
 	return &UserController{
-		userRepo:   userRepo,
-		statRepo:   statRepo,
-		interactor: interactor,
-		logger:     logger,
+		userService: userService,
+		statService: statService,
+		interactor:  interactor,
+		logger:      logger,
 	}
 }
 
 // Регистрирует нового пользователя в системе
 func (uc *UserController) Register(user model.User) {
-	_, err := uc.userRepo.FindByID(user.ID)
+	_, err := uc.userService.GetUserByTelegramId(user.TelegramID)
 	if err == nil {
 		uc.sendResponse("Вы уже зарегистрированы.")
 		return
 	}
 
-	if user, err = uc.userRepo.Create(user); err == nil {
-		if err = uc.statRepo.Create(model.Statistics{UserID: user.ID}); err == nil {
+	if user, err = uc.userService.CreateUser(user.Nickname, user.TelegramID); err == nil {
+		if err = uc.statService.CreateStatistics(user); err == nil {
 			uc.sendResponse(`Вы успешно зарегистрированы под ником %s.`, user.Nickname)
 		}
 	}
@@ -75,9 +76,7 @@ func (uc *UserController) ChangeNickname() {
 			continue
 		}
 
-		msg.Sender.Nickname = msg.Text
-		err = uc.userRepo.Update(*msg.Sender)
-		if err != nil {
+		if !uc.userService.ChangeUsername(msg.Text, msg.Sender.TelegramID) {
 			uc.sendResponse("Не удалось обновить никнейм. Попробуйте снова через какое-то время.")
 		} else {
 			response := "Ваш новый никнейм сохранен. Рад иметь с вами дело, %s."
@@ -107,7 +106,7 @@ func (uc *UserController) ShowHelp() {
 		case actionGameRules:
 			uc.showGameRules()
 		case actionStatistics:
-			uc.showStatisticsForUser(msg.Sender.ID)
+			uc.showStatisticsForUser(*msg.Sender)
 		}
 	}
 }
@@ -124,12 +123,12 @@ func (uc *UserController) showGameRules() {
 // Выводит статистику конкретного пользователя
 //
 // Соответствует команде `/статистика`
-func (uc *UserController) showStatisticsForUser(userID int64) {
-	stat, err := uc.statRepo.FindByUserID(userID)
+func (uc *UserController) showStatisticsForUser(user model.User) {
+	stat, err := uc.statService.GetStatistics(user)
 	if err != nil {
 		// must never happen - statistics must me created with user at the same time
 		uc.logger.
-			WithField("userID", userID).
+			WithField("user", user).
 			Error("failed to find statistics")
 		uc.sendResponse("К сожалению, произошла ошибка. Попробуйте повторить ваш запрос позже.")
 	} else {

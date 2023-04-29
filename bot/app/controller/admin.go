@@ -1,19 +1,22 @@
 package controller
 
-import model "github.com/RullDeef/telegram-quiz-bot/model"
+import (
+	model "github.com/RullDeef/telegram-quiz-bot/model"
+	"github.com/RullDeef/telegram-quiz-bot/service"
+)
 
 type AdminController struct {
-	userRepo   model.UserRepository
-	interactor model.Interactor
+	userService *service.UserService
+	interactor  model.Interactor
 }
 
 func NewAdminController(
-	userRepo model.UserRepository,
+	userService *service.UserService,
 	interactor model.Interactor,
 ) *AdminController {
 	return &AdminController{
-		userRepo:   userRepo,
-		interactor: interactor,
+		userService: userService,
+		interactor:  interactor,
 	}
 }
 

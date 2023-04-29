@@ -1,7 +1,7 @@
 // Данный модуль реализует бизнес-логику, связанную с пользователем:
-//  - создание нового пользователя по telegram id;
-//  - смена роли существующего пользователя;
-//  - получение пользователя из базы данных по его telegram id.
+//   - создание нового пользователя по telegram id;
+//   - смена роли существующего пользователя;
+//   - получение пользователя из базы данных по его telegram id.
 package service
 
 import (
@@ -15,8 +15,8 @@ type UserService struct {
 	UserRepo model.UserRepository
 }
 
-func NewUserService(UserRepository model.UserRepository) UserService {
-	return UserService{UserRepository}
+func NewUserService(UserRepository model.UserRepository) *UserService {
+	return &UserService{UserRepository}
 }
 
 // Функция создает нового пользователя в базе данных.
@@ -29,7 +29,7 @@ func NewUserService(UserRepository model.UserRepository) UserService {
 //  2. В случае получения ошибки из репозитория при сохранении пользователя возвращает пустую структуру пользователя и ошибку базы данных.
 func (s *UserService) CreateUser(username string, telegramId string) (model.User, error) {
 	_, err := s.UserRepo.FindByTelegramID(telegramId)
-	if (err != nil) {
+	if err == nil {
 		return model.User{}, errors.New("Duplicate user")
 	}
 	var user model.User
@@ -37,7 +37,7 @@ func (s *UserService) CreateUser(username string, telegramId string) (model.User
 	user.TelegramID = telegramId
 	user.Role = model.UserRoleUser
 	temp, err := s.UserRepo.Create(user)
-	if (err != nil) {
+	if err != nil {
 		return model.User{}, errors.New("Database error")
 	}
 	return temp, nil

@@ -23,39 +23,39 @@ func TestUserServiceCreateUser(t *testing.T) {
 	wrongRole := "superuser"
 	existing_user := model.User{Nickname: nickname, TelegramID: telegramId, Role: roleUser}
 	_, err := repo.Create(existing_user)
-	if (err != nil) {
+	if err != nil {
 		t.Errorf("Create database error")
 	}
 
 	t.Run("Add duplicate user should return error", func(t *testing.T) {
 		_, err := service.CreateUser(nickname, telegramId)
-		if (err != nil) {
+		if err == nil {
 			t.Errorf("CreateUser duplicate user; want error")
 		}
 	})
 
 	err = repo.Delete(existing_user)
-	if (err != nil) {
+	if err != nil {
 		t.Errorf("Delete database error")
 	}
 	t.Run("Add new user should return not null user with db id", func(t *testing.T) {
 		_, err := service.CreateUser(nickname, telegramId)
-		if (err != nil) {
+		if err != nil {
 			t.Errorf("CreateUser new user; want true")
 		}
 	})
 
 	new_user := model.User{Nickname: nickname1, TelegramID: telegramId1, Role: roleAdmin}
 	_, err = repo.Create(new_user)
-	if (err != nil) {
+	if err != nil {
 		t.Errorf("Create database error")
 	}
 	t.Run("Change role should be one of set roles", func(t *testing.T) {
 		res, _ := repo.FindByTelegramID(telegramId)
 		res1, _ := repo.FindByTelegramID(telegramId1)
 		if (res != model.User{} && res.Nickname != nickname &&
-		res1 != model.User{} && res1.Nickname != nickname1 &&
-		(res.Role != wrongRole) && (res.Role == model.UserRoleUser || res.Role == model.UserRoleAdmin) && (res1.Role != wrongRole) && (res1.Role == model.UserRoleUser || res1.Role == model.UserRoleAdmin)){
+			res1 != model.User{} && res1.Nickname != nickname1 &&
+			(res.Role != wrongRole) && (res.Role == model.UserRoleUser || res.Role == model.UserRoleAdmin) && (res1.Role != wrongRole) && (res1.Role == model.UserRoleUser || res1.Role == model.UserRoleAdmin)) {
 			t.Errorf("Role is not added accroding to inner rule")
 		}
 	})
@@ -74,20 +74,20 @@ func TestUserServiceSetUserRole(t *testing.T) {
 	updateRole := model.UserRoleAdmin
 	existing_user := model.User{Nickname: nickname, TelegramID: telegramId, Role: role}
 	_, err := repo.Create(existing_user)
-	if (err != nil) {
+	if err != nil {
 		t.Errorf("Create database error")
 	}
 
 	t.Run("Update role should return true", func(t *testing.T) {
 		status := service.SetUserRole(updateRole, telegramId)
-		if (status != true) {
+		if status != true {
 			t.Errorf("User is not existing should return false")
 		}
 	})
 
 	t.Run("Update role of not existing user should return false", func(t *testing.T) {
 		status := service.SetUserRole(updateRole, wrongTelegramId)
-		if (status != false) {
+		if status != false {
 			t.Errorf("User is not existing should return false")
 		}
 	})
@@ -102,26 +102,26 @@ func TestUserServiceGetUserByTelegramId(t *testing.T) {
 	nickname := "Johnny"
 	telegramId := "telegramID#1"
 	wrongTelegramId := "telegramID#2"
-	role := model.UserRoleUser;
+	role := model.UserRoleUser
 	existing_user := model.User{Nickname: nickname, TelegramID: telegramId, Role: role}
 	_, err := repo.Create(existing_user)
-	if (err != nil) {
+	if err != nil {
 		t.Errorf("Create database error")
 	}
 
 	t.Run("Get user with correct telegram id should return user struct", func(t *testing.T) {
 		user, err := service.GetUserByTelegramId(telegramId)
-		if (err != nil) {
+		if err != nil {
 			t.Errorf("Find user with telegram id should return user")
 		}
-		if (user.Nickname != nickname || user.TelegramID != telegramId || user.Role != role) {
+		if user.Nickname != nickname || user.TelegramID != telegramId || user.Role != role {
 			t.Errorf("Found wrong user")
 		}
 	})
 
 	t.Run("Get user with wrong telegram id should return error", func(t *testing.T) {
 		_, err := service.GetUserByTelegramId(wrongTelegramId)
-		if (err == nil) {
+		if err == nil {
 			t.Errorf("Found user with not existing id")
 		}
 	})
@@ -140,22 +140,21 @@ func TestUserServiceChangeUsername(t *testing.T) {
 	role := model.UserRoleUser
 	existing_user := model.User{Nickname: nickname, TelegramID: telegramId, Role: role}
 	_, err := repo.Create(existing_user)
-	if (err != nil) {
+	if err != nil {
 		t.Errorf("Create database error")
 	}
 
 	t.Run("Update username should return true", func(t *testing.T) {
 		status := service.ChangeUsername(updateNickname, telegramId)
-		if (status != true) {
+		if status != true {
 			t.Errorf("User is not existing should return false")
 		}
 	})
 
 	t.Run("Update username of not existing user should return false", func(t *testing.T) {
 		status := service.ChangeUsername(updateNickname, wrongTelegramId)
-		if (status != false) {
+		if status != false {
 			t.Errorf("User is not existing should return false")
 		}
 	})
 }
-

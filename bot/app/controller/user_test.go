@@ -6,6 +6,7 @@ import (
 	"github.com/RullDeef/telegram-quiz-bot/mockinteractor"
 	"github.com/RullDeef/telegram-quiz-bot/model"
 	mem_repo "github.com/RullDeef/telegram-quiz-bot/repository/mem"
+	"github.com/RullDeef/telegram-quiz-bot/service"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -86,10 +87,12 @@ func initUserController() (*mem_repo.UserRepository, *mem_repo.StatisticsReposit
 	statRepo := mem_repo.NewStatisticsRepository()
 	logger := log.New()
 	interactor := mockinteractor.New()
+	userService := service.NewUserService(userRepo)
+	statService := service.NewStatisticsService(userRepo, statRepo, logger)
 
 	ctrl := NewUserController(
-		userRepo,
-		statRepo,
+		userService,
+		statService,
 		interactor,
 		logger,
 	)
