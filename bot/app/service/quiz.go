@@ -28,6 +28,32 @@ func (qs *QuizService) SetNumQuestionsInQuiz(number int) {
 	qs.nQuestsInQuiz = number
 }
 
+// Формирование квиза со случайным выбором тематики
+//
+// Вызывает CreateQuiz()
+//
+// Выход: все вопросы по выбранной случайным образом тематике, ошибка
+//
+// Возможные ошибки:
+//	 - в случае успеха возвращается nil.
+//   - в случае ошибки генерации числа ищутся вопросы с несуществующей тематикой.
+func (qs *QuizService) CreateRandomQuiz() (model.Quiz, error) {
+	var rand_topic string
+
+	topics := []string{"lisp", "prolog", "python", "Go"}
+	n_topics := len(topics)
+
+	index_rand_topic := rand.Intn(n_topics)
+
+	if index_rand_topic >= 0 {
+		rand_topic = topics[index_rand_topic]
+	} else {
+		rand_topic = "#not"
+	}
+
+	return qs.CreateQuiz(rand_topic)
+}
+
 // Формирование квиза
 // Принимает: тематику квиза
 // Возвращает: сформированный квиз из 15-ти вопросов по данной тематике и ошибку
@@ -38,9 +64,11 @@ func (qs *QuizService) CreateQuiz(topic string) (model.Quiz, error) {
 	var i_quest int
 	questions, err := qs.QuestionRepo.FindByTopic(topic)
 
-	for i := 0; i < qs.nQuestsInQuiz; i++ {
-		i_quest = rand.Intn(qs.nQuestsInQuiz)
-		quiz.Questions = append(quiz.Questions, questions[i_quest])
+	if err == nil {
+		for i := 0; i < qs.nQuestsInQuiz; i++ {
+			i_quest = rand.Intn(qs.nQuestsInQuiz)
+			quiz.Questions = append(quiz.Questions, questions[i_quest])
+		}
 	}
 
 	return quiz, err
