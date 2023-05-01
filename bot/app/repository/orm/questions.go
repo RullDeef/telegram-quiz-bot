@@ -110,17 +110,17 @@ func (qr *QuestionsRepository) FindByTopic(topic string) ([]model.Question, erro
 
 func (qr *QuestionsRepository) GetAllTopics() ([]string, error) {
 	rows, err := qr.db.Raw("select distinct topic from questions").Rows()
-	defer rows.Close()
-
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var topics []string
 	for rows.Next() {
 		var topic string
-		rows.Scan(&topic)
-
+		if err := rows.Scan(&topic); err != nil {
+			return nil, err
+		}
 		topics = append(topics, topic)
 	}
 

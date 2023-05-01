@@ -51,7 +51,7 @@ func (ur *QuestionsRepository) GetAllTopics() ([]string, error) {
 	}
 
 	var res []string
-	for topic, _ := range topics {
+	for topic := range topics {
 		res = append(res, topic)
 	}
 	return res, nil
