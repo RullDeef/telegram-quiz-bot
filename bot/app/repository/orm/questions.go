@@ -108,6 +108,25 @@ func (qr *QuestionsRepository) FindByTopic(topic string) ([]model.Question, erro
 	return questions, nil
 }
 
+func (qr *QuestionsRepository) GetAllTopics() ([]string, error) {
+	rows, err := qr.db.Raw("select distinct topic from questions").Rows()
+	defer rows.Close()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var topics []string
+	for rows.Next() {
+		var topic string
+		rows.Scan(&topic)
+
+		topics = append(topics, topic)
+	}
+
+	return topics, nil
+}
+
 // Обновление вопроса в БД
 //
 //   - q - модель вопроса
