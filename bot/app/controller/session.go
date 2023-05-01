@@ -7,13 +7,12 @@ import (
 	"time"
 
 	model "github.com/RullDeef/telegram-quiz-bot/model"
-	"github.com/RullDeef/telegram-quiz-bot/service"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	defaultGatherPlayerTimeout = 30 * time.Second
-	defaultWaitQuestionTimeout = 30 * time.Second
+	defaultGatherPlayerTimeout  = 30 * time.Second
+	defaultWaitForAnswerTimeout = 30 * time.Second
 )
 
 const (
@@ -24,19 +23,20 @@ const (
 const confirmActionID = iota
 
 type SessionController struct {
-	userService         *service.UserService
-	statService         *service.StatisticsService
-	quizService         *service.QuizService
-	interactor          model.Interactor
-	logger              *log.Logger
-	state               *model.SessionState
-	gatherPlayerTimeout time.Duration
+	userService          model.UserService
+	statService          model.StatisticsService
+	quizService          model.QuizService
+	interactor           model.Interactor
+	logger               *log.Logger
+	state                *model.SessionState
+	gatherPlayerTimeout  time.Duration
+	waitForAnswerTimeout time.Duration
 }
 
 func NewSessionController(
-	userService *service.UserService,
-	statService *service.StatisticsService,
-	quizService *service.QuizService,
+	userService model.UserService,
+	statService model.StatisticsService,
+	quizService model.QuizService,
 	interactor model.Interactor,
 	logger *log.Logger,
 ) *SessionController {
@@ -53,6 +53,11 @@ func NewSessionController(
 // Устанавливает максимальное время ожидания при сборе игроков
 func (c *SessionController) SetGatherPlayerTimeout(timeout time.Duration) {
 	c.gatherPlayerTimeout = timeout
+}
+
+// Устанавливает максимальное время ожидания ответа на вопрос
+func (c *SessionController) SetWaitForAnswerTimeout(timeout time.Duration) {
+	c.waitForAnswerTimeout = timeout
 }
 
 // Запускает квиз
@@ -101,7 +106,7 @@ func (c *SessionController) askQuestion(question model.Question) {
 	answeredUsers := make(map[string]bool)
 
 	c.showQuestion(question)
-	timer := time.NewTimer(defaultWaitQuestionTimeout)
+	timer := time.NewTimer(defaultWaitForAnswerTimeout)
 	startTime := time.Now()
 
 	for {
@@ -115,7 +120,7 @@ func (c *SessionController) askQuestion(question model.Question) {
 			}
 		case <-c.state.WaitForPause():
 			c.waitForResume()
-			timer = time.NewTimer(defaultWaitQuestionTimeout)
+			timer = time.NewTimer(defaultWaitForAnswerTimeout)
 		case <-timer.C:
 			// time is up
 			c.sendResponse("Никто не дал правльного ответа.")
@@ -238,7 +243,7 @@ func (c *SessionController) informGatheringEnded(users []*model.User) {
 		for _, u := range users {
 			usernames = append(usernames, u.Nickname)
 		}
-		c.sendResponse("Начинаем квиз! Список участников: %s.", strings.Join(usernames, "\n"))
+		c.sendResponse("Начинаем квиз! Список участников:\n%s.", strings.Join(usernames, ",\n"))
 	}
 }
 

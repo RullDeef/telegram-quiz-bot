@@ -9,6 +9,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func TestStatisticsServiceInterface(t *testing.T) {
+	var _ model.StatisticsService = &StatisticsService{}
+}
+
 func TestStatisticsService(t *testing.T) {
 	userRepo := mem_repo.NewUserRepository()
 
