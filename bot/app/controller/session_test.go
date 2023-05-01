@@ -104,7 +104,7 @@ func TestInterrupts(t *testing.T) {
 		mockInteractor.Expect("Квиз завершен. Спасибо за участие!")
 
 		mockQuizService.EXPECT().
-			CreateQuiz(gomock.Any()).
+			CreateRandomQuiz().
 			Return(testQuiz, nil)
 
 		mockStatisticsService.EXPECT().
