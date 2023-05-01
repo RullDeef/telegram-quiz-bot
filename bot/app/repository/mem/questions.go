@@ -44,6 +44,19 @@ func (ur *QuestionsRepository) FindByTopic(topic string) ([]model.Question, erro
 	return res, nil
 }
 
+func (ur *QuestionsRepository) GetAllTopics() ([]string, error) {
+	topics := make(map[string]bool)
+	for _, q := range ur.questions {
+		topics[q.Topic] = true
+	}
+
+	var res []string
+	for topic := range topics {
+		res = append(res, topic)
+	}
+	return res, nil
+}
+
 func (ur *QuestionsRepository) Update(q model.Question) error {
 	for i, u := range ur.questions {
 		if u.ID == q.ID {

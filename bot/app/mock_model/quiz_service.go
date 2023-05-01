@@ -78,6 +78,21 @@ func (mr *MockQuizServiceMockRecorder) CreateQuiz(topic interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateQuiz", reflect.TypeOf((*MockQuizService)(nil).CreateQuiz), topic)
 }
 
+// CreateRandomQuiz mocks base method.
+func (m *MockQuizService) CreateRandomQuiz() (model.Quiz, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateRandomQuiz")
+	ret0, _ := ret[0].(model.Quiz)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateRandomQuiz indicates an expected call of CreateRandomQuiz.
+func (mr *MockQuizServiceMockRecorder) CreateRandomQuiz() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRandomQuiz", reflect.TypeOf((*MockQuizService)(nil).CreateRandomQuiz))
+}
+
 // SetNumQuestionsInQuiz mocks base method.
 func (m *MockQuizService) SetNumQuestionsInQuiz(number int) {
 	m.ctrl.T.Helper()

@@ -76,8 +76,7 @@ func (c *SessionController) Run() {
 		return
 	}
 
-	// TODO: make method for quiz generation with random topic
-	quiz, err := c.quizService.CreateQuiz("test topic")
+	quiz, err := c.quizService.CreateRandomQuiz()
 	if err != nil {
 		panic(err)
 	}
