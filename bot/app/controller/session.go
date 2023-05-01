@@ -106,7 +106,7 @@ func (c *SessionController) askQuestion(question model.Question) {
 	answeredUsers := make(map[string]bool)
 
 	c.showQuestion(question)
-	timer := time.NewTimer(defaultWaitForAnswerTimeout)
+	timer := time.NewTimer(c.waitForAnswerTimeout)
 	startTime := time.Now()
 
 	for {
@@ -120,7 +120,7 @@ func (c *SessionController) askQuestion(question model.Question) {
 			}
 		case <-c.state.WaitForPause():
 			c.waitForResume()
-			timer = time.NewTimer(defaultWaitForAnswerTimeout)
+			timer = time.NewTimer(c.waitForAnswerTimeout)
 		case <-timer.C:
 			// time is up
 			c.sendResponse("Никто не дал правльного ответа.")
