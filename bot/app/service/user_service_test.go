@@ -7,6 +7,10 @@ import (
 	mem_repo "github.com/RullDeef/telegram-quiz-bot/repository/mem"
 )
 
+func TestUserServiceInterface(t *testing.T) {
+	var _ model.UserService = &UserService{}
+}
+
 // Create new User from username + telegram id
 // 1. No duplicate user can be added
 // 2. When added returns true

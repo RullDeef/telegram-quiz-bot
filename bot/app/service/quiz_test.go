@@ -8,6 +8,10 @@ import (
 	mem_repo "github.com/RullDeef/telegram-quiz-bot/repository/mem"
 )
 
+func TestQuizServiceInterface(t *testing.T) {
+	var _ model.QuizService = &QuizService{}
+}
+
 func TestQuizService(t *testing.T) {
 	question_repo := mem_repo.NewQuestionsRepository()
 	quiz_service := NewQuizService(question_repo)

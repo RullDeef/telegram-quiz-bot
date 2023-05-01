@@ -19,6 +19,7 @@ type BotManager struct {
 	interactorFactory InteractorFactory
 	userService       *service.UserService
 	statService       *service.StatisticsService
+	quizService       *service.QuizService
 	logger            *log.Logger
 	subscriptions     []subscription
 	mutex             *sync.RWMutex
@@ -34,12 +35,14 @@ func NewBotManager(
 	interactorFactory InteractorFactory,
 	userService *service.UserService,
 	statService *service.StatisticsService,
+	quizService *service.QuizService,
 	logger *log.Logger,
 ) *BotManager {
 	return &BotManager{
 		interactorFactory: interactorFactory,
 		userService:       userService,
 		statService:       statService,
+		quizService:       quizService,
 		logger:            logger,
 		subscriptions:     nil,
 		mutex:             &sync.RWMutex{},
@@ -103,7 +106,10 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				controller.NewSessionController(
 					bm.userService,
+					bm.statService,
+					bm.quizService,
 					interactor,
+					bm.logger,
 				).Run()
 			})
 		}

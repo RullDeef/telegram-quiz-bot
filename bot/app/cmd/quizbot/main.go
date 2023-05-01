@@ -16,6 +16,7 @@ import (
 
 func main() {
 	logger := log.New()
+	logger.Level = log.DebugLevel
 
 	db, err := buildDBConnection()
 	if err != nil {
@@ -24,15 +25,17 @@ func main() {
 
 	userRepo := orm.NewUserRepo(db)
 	statRepo := orm.NewStatisticsRepo(db)
+	questionRepo := orm.NewQuestionsRepository(db)
 
 	userService := service.NewUserService(userRepo)
 	statService := service.NewStatisticsService(userRepo, statRepo, logger)
+	quizService := service.NewQuizService(questionRepo)
 
 	publisher := tginteractor.NewTGBotPublisher(os.Getenv("TELEGRAM_API_TOKEN"))
 
 	botMngr := manager.NewBotManager(func(bm *manager.BotManager, i int64, c chan model.Message) model.Interactor {
 		return tginteractor.NewInteractor(publisher, i, c)
-	}, userService, statService, logger)
+	}, userService, statService, quizService, logger)
 
 	publisher.Run(botMngr)
 }
@@ -40,9 +43,9 @@ func main() {
 func buildDBConnection() (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s",
 		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_PORT"),
 		os.Getenv("DB_DBNAME"),
 	)
 	return gorm.Open(postgres.Open(dsn), &gorm.Config{SkipDefaultTransaction: true})
