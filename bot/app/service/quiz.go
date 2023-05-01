@@ -35,21 +35,16 @@ func (qs *QuizService) SetNumQuestionsInQuiz(number int) {
 // Выход: все вопросы по выбранной случайным образом тематике, ошибка
 //
 // Возможные ошибки:
-//	 - в случае успеха возвращается nil.
-//   - в случае ошибки генерации числа ищутся вопросы с несуществующей тематикой.
+//	 - ошибка при получении списка тематик из репозитория
 func (qs *QuizService) CreateRandomQuiz() (model.Quiz, error) {
-	var rand_topic string
-
-	topics := []string{"lisp", "prolog", "python", "Go"}
-	n_topics := len(topics)
-
-	index_rand_topic := rand.Intn(n_topics)
-
-	if index_rand_topic >= 0 {
-		rand_topic = topics[index_rand_topic]
-	} else {
-		rand_topic = "#not"
+	topics, err := qs.QuestionRepo.GetAllTopics()
+	if err != nil {
+		return model.Quiz{}, err
 	}
+
+	n_topics := len(topics)
+	index_rand_topic := rand.Intn(n_topics)
+	rand_topic := topics[index_rand_topic]
 
 	return qs.CreateQuiz(rand_topic)
 }
