@@ -41,12 +41,13 @@ func NewSessionController(
 	logger *log.Logger,
 ) *SessionController {
 	return &SessionController{
-		userService:         userService,
-		statService:         statService,
-		quizService:         quizService,
-		interactor:          interactor,
-		logger:              logger,
-		gatherPlayerTimeout: defaultGatherPlayerTimeout,
+		userService:          userService,
+		statService:          statService,
+		quizService:          quizService,
+		interactor:           interactor,
+		logger:               logger,
+		gatherPlayerTimeout:  defaultGatherPlayerTimeout,
+		waitForAnswerTimeout: defaultWaitForAnswerTimeout,
 	}
 }
 
