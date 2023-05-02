@@ -31,7 +31,7 @@ func main() {
 	statService := service.NewStatisticsService(userRepo, statRepo, logger)
 	quizService := service.NewQuizService(questionRepo)
 
-	publisher := tginteractor.NewTGBotPublisher(os.Getenv("TELEGRAM_API_TOKEN"))
+	publisher := tginteractor.NewTGBotPublisher(os.Getenv("TELEGRAM_API_TOKEN"), userRepo, logger)
 
 	botMngr := manager.NewBotManager(func(bm *manager.BotManager, i int64, c chan model.Message) model.Interactor {
 		return tginteractor.NewInteractor(publisher, i, c)

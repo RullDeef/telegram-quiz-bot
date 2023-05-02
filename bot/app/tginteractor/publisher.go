@@ -2,31 +2,39 @@ package tginteractor
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
 	"github.com/RullDeef/telegram-quiz-bot/manager"
 	"github.com/RullDeef/telegram-quiz-bot/model"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	log "github.com/sirupsen/logrus"
 )
 
 type TGBotPublisher struct {
+	userRepo    model.UserRepository
 	bot         *tgbotapi.BotAPI
+	logger      *log.Logger
 	chatMembers map[int64][]int64
 }
 
-func NewTGBotPublisher(token string) *TGBotPublisher {
+func NewTGBotPublisher(
+	token string,
+	userRepo model.UserRepository,
+	logger *log.Logger,
+) *TGBotPublisher {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		log.Panic("TELEGRAM_API_TOKEN env variable is not set")
 	}
 
-	bot.Debug = true
+	// bot.Debug = true
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	return &TGBotPublisher{
+		userRepo:    userRepo,
 		bot:         bot,
+		logger:      logger,
 		chatMembers: make(map[int64][]int64),
 	}
 }
@@ -39,21 +47,21 @@ func (bp *TGBotPublisher) Run(mngr *manager.BotManager) {
 
 	for update := range updates {
 		if update.Message != nil { // If we got a message
-			mngr.DispatchMessage(tgMessageToModel(update.Message))
+			mngr.DispatchMessage(bp.tgMessageToModel(update.Message))
 		} else if update.CallbackQuery != nil { // If someone waits an inline keyboard action
-			mngr.DispatchMessage(tgCallbackToModel(update.CallbackQuery))
+			mngr.DispatchMessage(bp.tgCallbackToModel(update.CallbackQuery))
 		}
 	}
 }
 
-func tgCallbackToModel(query *tgbotapi.CallbackQuery) model.Message {
+func (bp *TGBotPublisher) tgCallbackToModel(query *tgbotapi.CallbackQuery) model.Message {
 	buttonActionID, err := strconv.ParseInt(query.Data, 10, 64)
 	if err != nil {
 		log.Printf("ERROR: %v", err)
 	}
 	return model.Message{
 		ChatID:         query.Message.Chat.ID,
-		Sender:         tgUserToModel(query.From),
+		Sender:         bp.tgUserToModel(query.From),
 		Text:           "",
 		ReceiveTime:    time.Now(),
 		IsButtonAction: true,
@@ -62,10 +70,10 @@ func tgCallbackToModel(query *tgbotapi.CallbackQuery) model.Message {
 	}
 }
 
-func tgMessageToModel(message *tgbotapi.Message) model.Message {
+func (bp *TGBotPublisher) tgMessageToModel(message *tgbotapi.Message) model.Message {
 	return model.Message{
 		ChatID:         message.Chat.ID,
-		Sender:         tgUserToModel(message.From),
+		Sender:         bp.tgUserToModel(message.From),
 		Text:           message.Text,
 		ReceiveTime:    time.Now(),
 		IsPrivate:      message.Chat.IsPrivate(),
@@ -74,12 +82,24 @@ func tgMessageToModel(message *tgbotapi.Message) model.Message {
 	}
 }
 
-func tgUserToModel(user *tgbotapi.User) *model.User {
-	// TODO: load by telegram id from repository
-	return &model.User{
-		ID:         user.ID,
+func (bp *TGBotPublisher) tgUserToModel(user *tgbotapi.User) *model.User {
+	modelUser, err := bp.userRepo.FindByTelegramID(user.UserName)
+	if err == nil {
+		// Пользователь существует в базе
+		return &modelUser
+	}
+
+	modelUser = model.User{
 		Nickname:   fmt.Sprintf("%s %s", user.FirstName, user.LastName),
 		TelegramID: user.UserName,
-		Role:       "USER",
+		Role:       model.UserRoleUser,
 	}
+
+	// Иначе необходимо зарегистрировать пользователя
+	modelUser, err = bp.userRepo.Create(modelUser)
+	if err != nil {
+		bp.logger.WithField("modelUser", modelUser).Error(err)
+	}
+
+	return &modelUser
 }

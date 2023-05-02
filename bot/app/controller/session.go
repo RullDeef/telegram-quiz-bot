@@ -122,7 +122,7 @@ func (c *SessionController) askQuestion(question model.Question) {
 			timer = time.NewTimer(c.waitForAnswerTimeout)
 		case <-timer.C:
 			// time is up
-			c.sendResponse("Никто не дал правльного ответа.")
+			c.sendResponse("Никто не дал правильного ответа.")
 			return
 		}
 	}

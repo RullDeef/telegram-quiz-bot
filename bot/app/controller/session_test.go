@@ -100,7 +100,7 @@ func TestInterrupts(t *testing.T) {
 		mockInteractor.Expect("Начинаем квиз! Список участников:\npepe1,\npepe2.")
 
 		mockInteractor.Expect("question1\n\n1. answer1\n2. answer2")
-		mockInteractor.Expect("Никто не дал правльного ответа.")
+		mockInteractor.Expect("Никто не дал правильного ответа.")
 		mockInteractor.Expect("Квиз завершен. Спасибо за участие!")
 
 		mockQuizService.EXPECT().
