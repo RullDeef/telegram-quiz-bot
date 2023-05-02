@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/RullDeef/telegram-quiz-bot/controller"
@@ -75,30 +76,40 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				bm.newUserController(interactor).ShowHelp()
 			})
-		} else if msg.Text == commandCreateQuiz {
-			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
-				// TODO: check sender role here
-				controller.NewAdminController(
-					bm.userService,
-					interactor,
-				).CreateQuiz()
-			})
-		} else if msg.Text == commandViewQuizzes {
-			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
-				// TODO: check sender role here
-				controller.NewAdminController(
-					bm.userService,
-					interactor,
-				).ViewMyQuizzes()
-			})
-		} else if msg.Text == commandEditQuiz {
-			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
-				// TODO: check sender role here
-				controller.NewAdminController(
-					bm.userService,
-					interactor,
-				).EditQuiz()
-			})
+		} else if msg.Text == commandCreateQuestion {
+			fmt.Println("Роль: ", msg.Sender.Role)
+			if msg.Sender.Role == model.UserRoleAdmin {
+				bm.runJob(msg.ChatID, func(interactor model.Interactor) {
+					controller.NewAdminController(
+						bm.userService,
+						bm.quizService,
+						interactor,
+						bm.logger,
+					).CreateQuestion()
+				})
+			}
+		} else if msg.Text == commandViewQuestions {
+			if msg.Sender.Role == model.UserRoleAdmin {
+				bm.runJob(msg.ChatID, func(interactor model.Interactor) {
+					controller.NewAdminController(
+						bm.userService,
+						bm.quizService,
+						interactor,
+						bm.logger,
+					).ViewQuestions()
+				})
+			}
+		} else if msg.Text == commandEditQuestion {
+			if msg.Sender.Role == model.UserRoleAdmin {
+				bm.runJob(msg.ChatID, func(interactor model.Interactor) {
+					controller.NewAdminController(
+						bm.userService,
+						bm.quizService,
+						interactor,
+						bm.logger,
+					).EditQuestion()
+				})
+			}
 		}
 	} else { // message came from group chat
 		if msg.Text == commandStartQuiz {

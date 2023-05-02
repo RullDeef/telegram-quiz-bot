@@ -5,9 +5,9 @@ const (
 	commandChangeNickname = "/ник"
 	commandHelp           = "/помощь"
 
-	commandCreateQuiz  = "/создать"
-	commandViewQuizzes = "/просмотр"
-	commandEditQuiz    = "/редактировать"
+	commandCreateQuestion = "/создать"
+	commandViewQuestions  = "/просмотр"
+	commandEditQuestion   = "/редактировать"
 
 	commandStartQuiz = "/квиз"
 )
