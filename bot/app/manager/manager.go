@@ -151,6 +151,7 @@ func (bm *BotManager) runJob(chatID int64, job func(model.Interactor)) {
 	go func(interactor model.Interactor, msgChan chan model.Message) {
 		defer close(msgChan)
 		defer bm.removeSubscription(chatID)
+		defer bm.recoverJob(interactor)
 		job(interactor)
 	}(interactor, msgChan)
 }
@@ -186,5 +187,13 @@ func (bm *BotManager) removeSubscription(chatID int64) {
 			bm.subscriptions = append(bm.subscriptions[:i], bm.subscriptions[i+1:]...)
 			break
 		}
+	}
+}
+
+func (bm *BotManager) recoverJob(i model.Interactor) {
+	if err := recover(); err != nil {
+		bm.logger.Error(err)
+		resp := model.NewResponse("Произошла ошибка на сервере.")
+		i.SendResponse(resp)
 	}
 }

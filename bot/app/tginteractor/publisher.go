@@ -92,7 +92,7 @@ func (bp *TGBotPublisher) tgUserToModel(user *tgbotapi.User) *model.User {
 	modelUser = model.User{
 		Nickname:   fmt.Sprintf("%s %s", user.FirstName, user.LastName),
 		TelegramID: user.UserName,
-		Role:       modelUser.Role,
+		Role:       model.UserRoleUser,
 	}
 
 	// Иначе необходимо зарегистрировать пользователя

@@ -78,8 +78,12 @@ func (ac *AdminController) ViewQuestions() {
 	// 2. Получить список вопросов
 	questions, err := ac.quizService.ViewQuestionsByTopic(topic)
 	if err != nil {
-		ac.logger.Error(err)
-		ac.sendResponse("Произошла непредвиденная ошибка.")
+		ac.logger.WithField("topic", topic).Error(err)
+		panic(err)
+	}
+
+	if len(questions) == 0 {
+		ac.sendResponse("Список вопросов для данной тематике пуст.")
 		return
 	}
 
@@ -90,14 +94,21 @@ func (ac *AdminController) ViewQuestions() {
 	// 3. показать по 10 штук и кнопку "вперед"
 dance:
 	for {
-		questionsPage := paginate(questions, currPage, nQuestionsPerPage)
+		questionsPage, hasMorePages := paginate(questions, currPage, nQuestionsPerPage)
 
 		resp := model.NewResponse(fmt.Sprintf("Список вопросов:\n%s", strings.Join(questionsPage, "\n")))
-		resp.AddAction(actionNextPage, "Вперед")
+		if hasMorePages {
+			resp.AddAction(actionNextPage, "Вперед")
+		}
+		ac.interactor.SendResponse(resp)
 
-		msg = <-ac.interactor.MessageChan()
-		if msg.IsButtonAction {
-			currPage += 1
+		if hasMorePages {
+			msg = <-ac.interactor.MessageChan()
+			if msg.IsButtonAction {
+				currPage += 1
+			} else {
+				break dance
+			}
 		} else {
 			break dance
 		}
@@ -138,9 +149,14 @@ func (ac *AdminController) sendResponse(format string, args ...interface{}) {
 	ac.interactor.SendResponse(model.NewResponse(msgText))
 }
 
-// возвращает страницу page из данных data
-func paginate(data []string, page, itemsPerPage int) []string {
+// возвращает страницу page из данных data и флаг, есть ли еще данные
+func paginate(data []string, page, itemsPerPage int) ([]string, bool) {
 	i := (page - 1) * itemsPerPage
 	j := page * itemsPerPage
-	return data[i:j]
+
+	if j < len(data) {
+		return data[i:j], true
+	} else {
+		return data[i:], false
+	}
 }
