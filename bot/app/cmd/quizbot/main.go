@@ -1,45 +1,52 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"os"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/RullDeef/telegram-quiz-bot/manager"
+	"github.com/RullDeef/telegram-quiz-bot/model"
+	"github.com/RullDeef/telegram-quiz-bot/repository/orm"
+	"github.com/RullDeef/telegram-quiz-bot/service"
+	"github.com/RullDeef/telegram-quiz-bot/tginteractor"
+	log "github.com/sirupsen/logrus"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_API_TOKEN"))
+	logger := log.New()
+	logger.Level = log.DebugLevel
+
+	db, err := buildDBConnection()
 	if err != nil {
-		log.Panic(err)
+		logger.Fatal(err)
 	}
 
-	bot.Debug = true
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+	userRepo := orm.NewUserRepo(db)
+	statRepo := orm.NewStatisticsRepo(db)
+	questionRepo := orm.NewQuestionsRepository(db)
 
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
+	userService := service.NewUserService(userRepo)
+	statService := service.NewStatisticsService(userRepo, statRepo, logger)
+	quizService := service.NewQuizService(questionRepo)
 
-	updates := bot.GetUpdatesChan(u)
+	publisher := tginteractor.NewTGBotPublisher(os.Getenv("TELEGRAM_API_TOKEN"), userRepo, logger)
 
-	for update := range updates {
-		if update.Message != nil { // If we got a message
-			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+	botMngr := manager.NewBotManager(func(bm *manager.BotManager, i int64, c chan model.Message) model.Interactor {
+		return tginteractor.NewInteractor(publisher, i, c)
+	}, userService, statService, quizService, logger)
 
-			if update.Message.IsCommand() {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-				msg.ReplyToMessageID = update.Message.MessageID
+	publisher.Run(botMngr)
+}
 
-				switch update.Message.Command() {
-				case "ping":
-					msg.Text = "pong"
-				default:
-					msg.Text = "unknown command"
-				}
-
-				if _, err := bot.Send(msg); err != nil {
-					log.Panic(err)
-				}
-			}
-		}
-	}
+func buildDBConnection() (*gorm.DB, error) {
+	dsn := fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_DBNAME"),
+	)
+	return gorm.Open(postgres.Open(dsn), &gorm.Config{SkipDefaultTransaction: true})
 }

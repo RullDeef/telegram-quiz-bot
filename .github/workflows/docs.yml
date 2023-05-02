@@ -1,0 +1,31 @@
+name: Deploy documentation
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy-godoc:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Create host key
+      env:
+        KEY: ${{ secrets.DEPLOY_KEY }}
+      run: |
+        echo "$KEY" > id_ed25519
+        chmod 0600 id_ed25519
+    - name: Pull dev branch
+      env:
+        HOST: ${{ secrets.DEPLOY_HOST }}
+        PORT: ${{ secrets.DEPLOY_PORT }}
+        USER: ${{ secrets.DEPLOY_USER }}
+      run: >
+        ssh -o StrictHostKeyChecking=no -i id_ed25519 $USER@$HOST -p $PORT
+        'cd ~/telegram-quiz-bot &&
+        git checkout dev &&
+        git pull &&
+        docker-compose -f ./docker-compose.ci.yml stop godoc &&
+        docker-compose -f ./docker-compose.ci.yml up -d --build godoc'
+    - name: Remove host key
+      run: rm id_ed25519

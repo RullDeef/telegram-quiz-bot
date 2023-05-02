@@ -3,21 +3,28 @@ version: '3.3'
 services:
   db:
     image: postgres:15.2-alpine
-    restart: always
+    restart: unless-stopped
     volumes:
       - ./db/data:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
   bot:
     image: golang:1.20.2-alpine
-    restart: on-failure
+    restart: unless-stopped
     depends_on:
       - db
     volumes:
       - ./bot/mod_cache:/go/pkg/mod
       - ./bot/app:/usr/src/app
     working_dir: /usr/src/app
-    command: go run main.go
+    command: go run ./cmd/quizbot
     environment:
       TELEGRAM_API_TOKEN: ${TELEGRAM_API_TOKEN}
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_DBNAME: quizdb

@@ -1,7 +1,13 @@
 package model
 
-type AnswerOption struct {
-	ID        uint64
-	Text      string
-	IsCorrect bool
+// Модельная сущность Ответ
+type Answer struct {
+	// ID ответа
+	ID uint64
+
+	// Текст ответа
+	Text string
+
+	// Правильность ответа
+	IsСorrect bool
 }
