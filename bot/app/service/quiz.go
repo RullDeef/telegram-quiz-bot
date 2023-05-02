@@ -53,20 +53,29 @@ func (qs *QuizService) CreateRandomQuiz() (model.Quiz, error) {
 // Принимает: тематику квиза
 // Возвращает: сформированный квиз из 15-ти вопросов по данной тематике и ошибку
 func (qs *QuizService) CreateQuiz(topic string) (model.Quiz, error) {
-	quiz := model.Quiz{
-		Topic: topic,
-	}
-	var i_quest int
 	questions, err := qs.QuestionRepo.FindByTopic(topic)
-
-	if err == nil {
-		for i := 0; i < qs.nQuestsInQuiz; i++ {
-			i_quest = rand.Intn(qs.nQuestsInQuiz)
-			quiz.Questions = append(quiz.Questions, questions[i_quest])
-		}
+	if err != nil {
+		return model.Quiz{}, err
 	}
 
-	return quiz, err
+	rand.Shuffle(len(questions), func(i, j int) {
+		questions[i], questions[j] = questions[j], questions[i]
+	})
+
+	if len(questions) > qs.nQuestsInQuiz {
+		questions = questions[:qs.nQuestsInQuiz]
+	}
+
+	for _, q := range questions {
+		rand.Shuffle(len(q.Answers), func(i, j int) {
+			q.Answers[i], q.Answers[j] = q.Answers[j], q.Answers[i]
+		})
+	}
+
+	return model.Quiz{
+		Topic:     topic,
+		Questions: questions,
+	}, nil
 }
 
 // Добавление вопроса

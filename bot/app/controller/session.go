@@ -17,7 +17,8 @@ const (
 
 const (
 	pauseCommand  = "/пауза"
-	resumeCommand = "/прод"
+	resumeCommand = "/продолжить"
+	endCommand    = "/завершить"
 )
 
 const confirmActionID = iota
@@ -87,7 +88,9 @@ func (c *SessionController) Run() {
 
 	for _, question := range c.state.Quiz.Questions {
 		c.state.CurrentQuestion = &question
-		c.askQuestion(question)
+		if c.askQuestion(question) {
+			return
+		}
 	}
 
 	quizDuration := time.Since(startTime)
@@ -102,7 +105,7 @@ func (c *SessionController) Run() {
 }
 
 // Задаёт вопрос игрокам и ожидает ответов от них
-func (c *SessionController) askQuestion(question model.Question) {
+func (c *SessionController) askQuestion(question model.Question) bool {
 	answeredUsers := make(map[string]bool)
 
 	c.showQuestion(question)
@@ -116,15 +119,18 @@ func (c *SessionController) askQuestion(question model.Question) {
 				c.PauseQuiz()
 			} else if c.dispatchAnswerOption(msg, question, answeredUsers, startTime) {
 				c.sendResponse("%s дает верный ответ!", msg.Sender.Nickname)
-				return
+				return false
 			}
 		case <-c.state.WaitForPause():
-			c.waitForResume()
+			if c.waitForResume() {
+				c.EndQuiz()
+				return true // квиз завершен досрочно
+			}
 			timer = time.NewTimer(c.waitForAnswerTimeout)
 		case <-timer.C:
 			// time is up
 			c.sendResponse("Никто не дал правильного ответа.")
-			return
+			return false
 		}
 	}
 }
@@ -160,7 +166,8 @@ func (c *SessionController) EndQuiz() {
 	if c.state == nil {
 		c.logger.Warn("called EndQuiz when no quiz running (c.state == null)")
 	} else {
-		c.logger.Warn("TODO: EndQuiz")
+		c.state.Resume()
+		c.sendResponse("Квиз завершён досрочно.")
 	}
 }
 
@@ -170,7 +177,7 @@ func (c *SessionController) PauseQuiz() {
 		c.logger.Warn("called PauseQuiz when no quiz running (c.state == null)")
 	} else {
 		c.state.Pause()
-		c.sendResponse("Квиз приостановлен. Напишите /прод, чтобы возобновить.")
+		c.sendResponse("Квиз приостановлен. Напишите /продолжить, чтобы возобновить или /завершить, чтобы завершить досрочно.")
 	}
 }
 
@@ -250,15 +257,17 @@ func (c *SessionController) informGatheringEnded(users []*model.User) {
 // Регистрирует команду для продолжения квиза и продолжает квиз
 //
 // Пока состояние квиза не изменится на "возобновлено", выполнение блоируется.
-func (c *SessionController) waitForResume() {
+func (c *SessionController) waitForResume() bool {
 	for {
 		select {
 		case msg := <-c.interactor.MessageChan():
 			if msg.Text == resumeCommand {
 				c.ResumeQuiz()
+			} else if msg.Text == endCommand {
+				return true
 			}
 		case <-c.state.WaitForResume():
-			return
+			return false
 		}
 	}
 }
