@@ -13,6 +13,7 @@ import (
 
 type TGBotPublisher struct {
 	userRepo    model.UserRepository
+	statRepo    model.StatisticsRepository
 	bot         *tgbotapi.BotAPI
 	logger      *log.Logger
 	chatMembers map[int64][]int64
@@ -21,6 +22,7 @@ type TGBotPublisher struct {
 func NewTGBotPublisher(
 	token string,
 	userRepo model.UserRepository,
+	statRepo model.StatisticsRepository,
 	logger *log.Logger,
 ) *TGBotPublisher {
 	bot, err := tgbotapi.NewBotAPI(token)
@@ -33,6 +35,7 @@ func NewTGBotPublisher(
 
 	return &TGBotPublisher{
 		userRepo:    userRepo,
+		statRepo:    statRepo,
 		bot:         bot,
 		logger:      logger,
 		chatMembers: make(map[int64][]int64),
@@ -99,6 +102,12 @@ func (bp *TGBotPublisher) tgUserToModel(user *tgbotapi.User) *model.User {
 	modelUser, err = bp.userRepo.Create(modelUser)
 	if err != nil {
 		bp.logger.WithField("modelUser", modelUser).Error(err)
+	} else {
+		// А также создать сруктуру со статистикой
+		err = bp.statRepo.Create(model.Statistics{UserID: modelUser.ID})
+		if err != nil {
+			bp.logger.WithField("modelUser", modelUser).Error(err)
+		}
 	}
 
 	return &modelUser
