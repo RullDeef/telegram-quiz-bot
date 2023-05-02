@@ -3,7 +3,7 @@ version: '3.3'
 services:
   db:
     image: postgres:15.2-alpine
-    restart: always
+    restart: unless-stopped
     volumes:
       - ./db/data:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d
@@ -13,7 +13,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
   bot:
     image: golang:1.20.2-alpine
-    restart: on-failure
+    restart: unless-stopped
     depends_on:
       - db
     volumes:
