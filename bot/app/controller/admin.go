@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	model "github.com/RullDeef/telegram-quiz-bot/model"
@@ -10,7 +11,12 @@ import (
 
 const (
 	actionNextPage = iota
+	actionChangeCorrectAnswer
+	actionCommitChanges
+	actionCancelChanges
 )
+
+const actionShift = 100
 
 type AdminController struct {
 	userService model.UserService
@@ -116,16 +122,91 @@ dance:
 }
 
 func (ac *AdminController) EditQuestion() {
-	//1. Получение тематики может сразу id вопроса? A. оке
-	// Тогда надо делать метод просмотра всех вопросов (не по тематике)
-	//Сложна, ес чессна решить
-	// А, сделать обертку над той функцией ViewQuestions
-	// Сделать отдельно для тематики, отдельно для всех тематик срзу
-	// можно
+	ac.sendResponse("Введите идентификатор вопроса для редактирования.")
 
-	// 2. Получение от пользователя п*здюлей
-	//го проверим то что уже написали... => go
+	msg := <-ac.interactor.MessageChan()
+	questionID, err := strconv.ParseInt(msg.Text, 10, 64)
+	if err != nil {
+		ac.sendResponse("Некорректный идентификатор вопроса. Редактирование отменено.")
+		return
+	}
 
+	question, err := ac.quizService.ViewQuestionByID(questionID)
+	if err != nil {
+		ac.sendResponse("Не найден вопрос с указанным идентификатором. Редактирование отменено.")
+		return
+	}
+
+	for {
+		answers := ""
+		for i, ans := range question.Answers {
+			correctSign := ""
+			if ans.IsСorrect {
+				correctSign = "*"
+			}
+			answers += fmt.Sprintf("%s%d. %s\n", correctSign, i+1, ans.Text)
+		}
+		resp := model.NewResponse(fmt.Sprintf(`Вопрос: <<%s>>
+Варианты ответа:
+%s
+Редактируйте ответы c помощью кнопок ниже.
+Для смены корректного варианта ответа нажмите "*".
+Для сохранения нажмите ✔.
+Для отмены изменений нажмите ✘.`, question.Text, answers))
+		for i := range question.Answers {
+			resp.AddAction(answerIndexToActionID(i), strconv.Itoa(i+1))
+		}
+		resp.AddAction(actionChangeCorrectAnswer, "*")
+		resp.AddAction(actionCommitChanges, "✔")
+		resp.AddAction(actionCancelChanges, "✘")
+		ac.interactor.SendResponse(resp)
+
+		msg := <-ac.interactor.MessageChan()
+
+		// обработка сообщения от пользователя
+		if msg.IsButtonAction {
+			if msg.ActionID() == actionChangeCorrectAnswer {
+				// смена корректного ответа
+				resp := model.NewResponse("Выберите корректный вариант ответа.")
+				for i := range question.Answers {
+					resp.AddAction(answerIndexToActionID(i), strconv.Itoa(i+1))
+				}
+				ac.interactor.SendResponse(resp)
+
+				msg := <-ac.interactor.MessageChan()
+				answerIndex := actionIDToAnswerIndex(msg.ActionID())
+
+				// установка корректного варианта ответа
+				for i := range question.Answers {
+					question.Answers[i].IsСorrect = false
+				}
+				question.Answers[answerIndex].IsСorrect = true
+			} else if msg.ActionID() == actionCommitChanges {
+				// сохранение изменений
+				err := ac.quizService.UpdateQuestion(question)
+				if err != nil {
+					panic(err)
+				}
+
+				ac.sendResponse("Изменения успешно сохранены.")
+				break
+			} else if msg.ActionID() == actionCancelChanges {
+				// отмена изменений
+				ac.sendResponse("Изменения отменены.")
+				break
+			} else {
+				// редактирование ответа
+				answerIndex := actionIDToAnswerIndex(msg.ActionID())
+				ac.sendResponse("Редактирование ответа <<%s>>.\nВведите новое описание:", question.Answers[answerIndex].Text)
+
+				msg := <-ac.interactor.MessageChan()
+				question.Answers[answerIndex].Text = msg.Text
+			}
+		} else {
+			ac.sendResponse(`Используйте кнопки выше для редактирования вопроса.
+Для сохранения нажмите ✔. Для отмены изменений нажмите ✘.`)
+		}
+	}
 }
 
 func (ac *AdminController) commitQuestion(topic, question, correctAnswer string, wrongAnswers []string) error {
@@ -139,6 +220,14 @@ func (ac *AdminController) commitQuestion(topic, question, correctAnswer string,
 		}
 	}
 	return err
+}
+
+func answerIndexToActionID(index int) int64 {
+	return int64(index) + actionShift
+}
+
+func actionIDToAnswerIndex(actionID int64) int {
+	return int(actionID - actionShift)
 }
 
 // Отправляет ответ, одновременно логируя отправленное сообщение

@@ -35,7 +35,7 @@ func (qs *QuizService) SetNumQuestionsInQuiz(number int) {
 // Выход: все вопросы по выбранной случайным образом тематике, ошибка
 //
 // Возможные ошибки:
-//	 - ошибка при получении списка тематик из репозитория
+//   - ошибка при получении списка тематик из репозитория
 func (qs *QuizService) CreateRandomQuiz() (model.Quiz, error) {
 	topics, err := qs.QuestionRepo.GetAllTopics()
 	if err != nil {
@@ -126,4 +126,13 @@ func (qs *QuizService) ViewQuestionsByTopic(topic string) ([]string, error) {
 		descriptions = append(descriptions, description)
 	}
 	return descriptions, nil
+}
+
+func (qs *QuizService) ViewQuestionByID(id int64) (model.Question, error) {
+	question, err := qs.QuestionRepo.FindByID(id)
+	return question, err
+}
+
+func (qs *QuizService) UpdateQuestion(question model.Question) error {
+	return qs.QuestionRepo.Update(question)
 }

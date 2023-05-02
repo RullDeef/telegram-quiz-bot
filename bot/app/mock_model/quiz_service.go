@@ -105,6 +105,35 @@ func (mr *MockQuizServiceMockRecorder) SetNumQuestionsInQuiz(number interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetNumQuestionsInQuiz", reflect.TypeOf((*MockQuizService)(nil).SetNumQuestionsInQuiz), number)
 }
 
+// UpdateQuestion mocks base method.
+func (m *MockQuizService) UpdateQuestion(arg0 model.Question) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateQuestion", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateQuestion indicates an expected call of UpdateQuestion.
+func (mr *MockQuizServiceMockRecorder) UpdateQuestion(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateQuestion", reflect.TypeOf((*MockQuizService)(nil).UpdateQuestion), arg0)
+}
+
+// ViewQuestionByID mocks base method.
+func (m *MockQuizService) ViewQuestionByID(id int64) (model.Question, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ViewQuestionByID", id)
+	ret0, _ := ret[0].(model.Question)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ViewQuestionByID indicates an expected call of ViewQuestionByID.
+func (mr *MockQuizServiceMockRecorder) ViewQuestionByID(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ViewQuestionByID", reflect.TypeOf((*MockQuizService)(nil).ViewQuestionByID), id)
+}
+
 // ViewQuestionsByTopic mocks base method.
 func (m *MockQuizService) ViewQuestionsByTopic(topic string) ([]string, error) {
 	m.ctrl.T.Helper()

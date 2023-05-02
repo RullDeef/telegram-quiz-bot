@@ -7,4 +7,7 @@ type QuizService interface {
 	AddQuestionToTopic(topic string, question string) (int64, error)
 	AddAnswer(questionID int64, answer string, isCorrect bool) error
 	ViewQuestionsByTopic(topic string) ([]string, error)
+
+	ViewQuestionByID(id int64) (Question, error)
+	UpdateQuestion(Question) error
 }
