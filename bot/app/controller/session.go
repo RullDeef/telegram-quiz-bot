@@ -283,7 +283,7 @@ func (c *SessionController) sendResponse(format string, args ...interface{}) {
 // Возвращает список пользователей и флаг, показывающий, был ли добавлен пользователь
 func appendUniqueUser(users []*model.User, user *model.User) ([]*model.User, bool) {
 	for _, u := range users {
-		if u == user {
+		if u.TelegramID == user.TelegramID {
 			return users, false
 		}
 	}
