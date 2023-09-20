@@ -1,1 +1,1 @@
-## Квиз-бот для Telegram на Go
+## Квиз-бот для Telegram на Go.
