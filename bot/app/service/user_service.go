@@ -30,7 +30,7 @@ func NewUserService(UserRepository model.UserRepository) *UserService {
 func (s *UserService) CreateUser(username string, telegramId string) (model.User, error) {
 	_, err := s.UserRepo.FindByTelegramID(telegramId)
 	if err == nil {
-		return model.User{}, errors.New("Duplicate user")
+		return model.User{}, errors.New("duplicate user")
 	}
 	var user model.User
 	user.Nickname = username
@@ -38,7 +38,7 @@ func (s *UserService) CreateUser(username string, telegramId string) (model.User
 	user.Role = model.UserRoleUser
 	temp, err := s.UserRepo.Create(user)
 	if err != nil {
-		return model.User{}, errors.New("Database error")
+		return model.User{}, errors.New("database error")
 	}
 	return temp, nil
 }
@@ -75,7 +75,7 @@ func (s *UserService) SetUserRole(role string, telegramId string) bool {
 func (s *UserService) GetUserByTelegramId(id string) (model.User, error) {
 	temp, err := s.UserRepo.FindByTelegramID(id)
 	if err != nil {
-		return model.User{}, errors.New("No user found")
+		return model.User{}, errors.New("no user found")
 	}
 	return temp, nil
 }

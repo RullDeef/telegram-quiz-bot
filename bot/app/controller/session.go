@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -266,12 +267,12 @@ func (c *SessionController) waitForResume() {
 func (c *SessionController) panicRecoverer(recoverMessage string) {
 	if err := recover(); err != nil {
 		c.logger.Error(err)
-		c.sendResponse(recoverMessage)
+		c.sendResponse("%s", recoverMessage)
 	}
 }
 
 // Отправляет ответ, одновременно логируя отправленное сообщение
-func (c *SessionController) sendResponse(format string, args ...interface{}) {
+func (c *SessionController) sendResponse(format string, args ...any) {
 	msgText := fmt.Sprintf(format, args...)
 
 	c.logger.Info(msgText)
@@ -282,10 +283,8 @@ func (c *SessionController) sendResponse(format string, args ...interface{}) {
 //
 // Возвращает список пользователей и флаг, показывающий, был ли добавлен пользователь
 func appendUniqueUser(users []*model.User, user *model.User) ([]*model.User, bool) {
-	for _, u := range users {
-		if u == user {
-			return users, false
-		}
+	if slices.Contains(users, user) {
+		return users, false
 	}
 	return append(users, user), true
 }

@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
   builder: &go-base
-    image: golang:1.20.2-alpine
+    image: golang:1.26.4-alpine
     volumes:
       - ./bot/mod_cache:/go/pkg/mod
       - ./bot/app:/usr/src/app
@@ -10,7 +10,7 @@ services:
     command: 'go build -v -o telegram-quiz-bot ./cmd/quizbot'
   linter:
     <<: *go-base
-    image: golangci/golangci-lint:v1.51.2-alpine
+    image: golangci/golangci-lint:v2.12.2-alpine
     command: 'golangci-lint run'
   unit-tester:
     <<: *go-base
