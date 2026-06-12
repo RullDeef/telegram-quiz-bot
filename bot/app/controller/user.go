@@ -67,7 +67,7 @@ func (uc *UserController) ChangeNickname() {
 		msg, err := uc.waitForNextMessageWithTimeout(defaultWaitDuration)
 		if err != nil {
 			response := "Время для смены никнейма вышло. Для смены никнейма повторно используйте команду /ник."
-			uc.sendResponse(response)
+			uc.sendResponse("%s", response)
 			break
 		}
 
@@ -147,7 +147,7 @@ func (uc *UserController) showStatisticsForUser(user model.User) {
 }
 
 // Отправляет ответ, одновременно логируя отправленное сообщение
-func (uc *UserController) sendResponse(format string, args ...interface{}) {
+func (uc *UserController) sendResponse(format string, args ...any) {
 	msgText := fmt.Sprintf(format, args...)
 
 	uc.logger.Info(msgText)

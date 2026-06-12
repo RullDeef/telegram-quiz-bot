@@ -9,16 +9,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Build
-      uses: adrielcodeco/docker-compose-run-action@v1
-      with:
-        compose-file: './docker-compose.ci.yml'
-        service: builder
-    
+      run: docker compose -f ./docker-compose.ci.yml run -T builder
+
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: telegram-quiz-bot
         path: bot/app/telegram-quiz-bot
