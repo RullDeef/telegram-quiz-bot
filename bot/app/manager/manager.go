@@ -64,19 +64,20 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 
 	// per-user interaction
 	if msg.IsPrivate {
-		if msg.Text == commandRegister {
+		switch msg.Text {
+		case commandRegister:
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				bm.newUserController(interactor).Register(*msg.Sender)
 			})
-		} else if msg.Text == commandChangeNickname {
+		case commandChangeNickname:
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				bm.newUserController(interactor).ChangeNickname()
 			})
-		} else if msg.Text == commandHelp {
+		case commandHelp:
 			bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 				bm.newUserController(interactor).ShowHelp()
 			})
-		} else if msg.Text == commandCreateQuestion {
+		case commandCreateQuestion:
 			fmt.Println("Роль: ", msg.Sender.Role)
 			if msg.Sender.Role == model.UserRoleAdmin {
 				bm.runJob(msg.ChatID, func(interactor model.Interactor) {
@@ -88,7 +89,7 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 					).CreateQuestion()
 				})
 			}
-		} else if msg.Text == commandViewQuestions {
+		case commandViewQuestions:
 			if msg.Sender.Role == model.UserRoleAdmin {
 				bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 					controller.NewAdminController(
@@ -99,7 +100,7 @@ func (bm *BotManager) DispatchMessage(msg model.Message) {
 					).ViewQuestions()
 				})
 			}
-		} else if msg.Text == commandEditQuestion {
+		case commandEditQuestion:
 			if msg.Sender.Role == model.UserRoleAdmin {
 				bm.runJob(msg.ChatID, func(interactor model.Interactor) {
 					controller.NewAdminController(
